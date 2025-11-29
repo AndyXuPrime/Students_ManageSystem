@@ -1,8 +1,8 @@
 package com.javaee_hw.controller;
 
-import com.javaee_hw.config.Result;
-import com.javaee_hw.entity.*;
-import com.javaee_hw.service.*;
+import com.javaee_hw.common.Result;
+import com.javaee_hw.entity.Student;
+import com.javaee_hw.service.IStudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/student")
 public class StudentController {
-
     @Autowired
     private IStudentService studentService;
 
@@ -19,13 +18,11 @@ public class StudentController {
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String name) {
-        // 直接调用 Service
         return Result.success(studentService.getStudentPage(current, size, name));
     }
 
     @PostMapping
     public Result<Student> save(@RequestBody Student student) {
-        
         if (studentService.getStudentById(student.getSno()) != null) {
             return Result.error("学号已存在");
         }

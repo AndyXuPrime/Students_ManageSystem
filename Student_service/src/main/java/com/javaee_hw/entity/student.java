@@ -1,17 +1,16 @@
-package com.sims.entity;
+package com.javaee_hw.entity;
 
 import lombok.Data;
-import javax.persistence.*; // 注意是 javax.persistence
+import javax.persistence.*;
 import java.util.Date;
 
 @Data
-@Entity // 告诉 JPA 这是一个实体
-@Table(name = "student") // 对应数据库表名
+@Entity
+@Table(name = "student")
 public class Student {
-
-    @Id // 主键
+    @Id
     @Column(name = "Sno", length = 20)
-    private String sno; // 学号是手动输入的字符串，不需要 @GeneratedValue
+    private String sno;
 
     @Column(name = "Sname")
     private String sname;
@@ -20,7 +19,7 @@ public class Student {
     private String sex;
 
     @Column(name = "Birth")
-    @Temporal(TemporalType.DATE) // 指定日期格式
+    @Temporal(TemporalType.DATE)
     private Date birth;
 
     @Column(name = "Classno")
