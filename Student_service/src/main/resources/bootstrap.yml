@@ -1,12 +1,44 @@
+server:
+  port: 8082  # 明确指定端口，防止与网关(8080)冲突
+
 spring:
   application:
     name: studentmanage-test
+  
+  profiles:
+    active: dev
+
+
   cloud:
     nacos:
+      discovery:
+        server-addr: localhost:8848
       config:
         server-addr: localhost:8848
         file-extension: yaml
-      discovery:
-        server-addr: localhost:8848
-  profiles:
-    active: dev
+
+        refresh-enabled: true
+
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 👇 重点：这里已经改成了 student_info_other
+    url: jdbc:mysql://localhost:3306/student_info_other?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: root
+    password: 1110727 # 你的数据库密码
+
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+    timeout: 3000ms # 连接超时设置
+
+  jpa:
+    show-sql: true             # 控制台打印 SQL，方便调试
+    open-in-view: false        # 性能优化：关闭 OpenSessionInView
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update         # 自动更新表结构 (如果表不存在会自动创建，存在则更新)
+    properties:
+      hibernate:
+        format_sql: true       # 格式化 SQL 日志
