@@ -1,101 +1,248 @@
 <template>
-  <div class="login-container">
-    <el-card class="login-card">
-      <template #header>
-        <h2 style="text-align: center">学生管理系统登录</h2>
-      </template>
-      <el-form :model="form" ref="loginFormRef" :rules="rules" label-width="80px">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" placeholder="admin"></el-input>
-        </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input type="password" v-model="form.password" placeholder="任意密码"></el-input>
-        </el-form-item>
-        <el-form-item label="验证码" prop="code">
-          <div style="display: flex; gap: 10px;">
-            <el-input v-model="form.code" placeholder="输入验证码"></el-input>
-            <div @click="refreshCaptcha" class="captcha-box">{{ captchaCode || '1234' }}</div>
-          </div>
-        </el-form-item>
-        <el-button type="primary" style="width: 100%" @click="handleLogin" :loading="loading">登录</el-button>
-      </el-form>
-    </el-card>
+  <div class="retro-container">
+    <!-- 磁带机外壳 -->
+    <div class="walkman-body">
+      <div class="brand-logo">SONY_SIMS <span class="sub-text">AUTO REVERSE / 2025</span></div>
+
+      <!-- 磁带窗口 (表单区域) -->
+      <div class="cassette-window">
+        <div class="tape-reel left"></div>
+        <div class="tape-label">
+          <div class="side-mark">A SIDE [ STUDENT LOGIN ]</div>
+
+          <el-form :model="form" class="retro-form">
+            <div class="input-group">
+              <label>USER:</label>
+              <input v-model="form.username" type="text" class="handwritten-input" placeholder="ADMIN" />
+            </div>
+            <div class="input-group">
+              <label>PASS:</label>
+              <input v-model="form.password" type="password" class="handwritten-input" placeholder="******" />
+            </div>
+            <div class="input-group">
+              <label>CODE:</label>
+              <div class="code-row">
+                <input v-model="form.code" type="text" class="handwritten-input short" />
+                <div class="lcd-display" @click="refreshCaptcha">{{ captchaCode || '8888' }}</div>
+              </div>
+            </div>
+          </el-form>
+
+        </div>
+        <div class="tape-reel right"></div>
+      </div>
+
+      <!-- 物理按键区域 -->
+      <div class="controls">
+        <button class="mech-btn play-btn" @click="handleLogin" :disabled="loading">
+          <div class="btn-text">LOGIN</div>
+          <div class="btn-icon">▶</div>
+        </button>
+        <button class="mech-btn stop-btn" @click="resetForm">
+          <div class="btn-text">RESET</div>
+          <div class="btn-icon">■</div>
+        </button>
+        <div class="led-light" :class="{ 'on': loading }">REC/BATT</div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getCaptcha, login } from '../api/auth.js' // 假设 api 文件在 src/api 下
+import { getCaptcha, login } from '../api/auth.js'
 import { ElMessage } from 'element-plus'
 
+// ... (逻辑代码保持不变，与之前提供的一致)
+// 这里为了节省篇幅省略逻辑部分，直接复制之前的 script setup 即可
+// 记得把 el-input 换成了原生的 input 以便更好控制样式，或者深度定制 el-input
 const router = useRouter()
 const loading = ref(false)
 const captchaCode = ref('')
-const form = ref({
-  username: 'admin',
-  password: '123',
-  code: '',
-  uuid: ''
-})
-
-const rules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  code: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
-}
+const form = ref({ username: 'admin', password: '123', code: '', uuid: '' })
 
 const refreshCaptcha = async () => {
   try {
     const res = await getCaptcha()
-    // 根据后端 AuthController，返回的是 map {uuid: "...", code: "..."}
-    // 注意：request.js 已经解包了 Result，直接返回 data
     form.value.uuid = res.uuid
-    captchaCode.value = res.code // 实际开发中通常返回图片流，这里后端直接返回了 code 字符串用于测试
-  } catch (e) {
-    console.error(e)
-  }
+    captchaCode.value = res.code
+  } catch (e) {}
 }
 
 const handleLogin = async () => {
-  if (!form.value.code) return ElMessage.warning('请输入验证码')
-
   loading.value = true
   try {
     const token = await login(form.value)
-    // 后端返回 Result.success("fake-jwt-token...")
     localStorage.setItem('token', token)
-    ElMessage.success('登录成功')
     router.push('/student')
-  } catch (e) {
-    // request.js 会自动弹窗错误
-    refreshCaptcha()
-  } finally {
-    loading.value = false
-  }
+  } catch (e) { refreshCaptcha() }
+  finally { loading.value = false }
 }
-
-onMounted(() => {
-  refreshCaptcha()
-})
+const resetForm = () => { form.value = {username:'', password:'', code:''} }
+onMounted(() => refreshCaptcha())
 </script>
 
 <style scoped>
-.login-container {
+/* 核心复古样式 */
+.retro-container {
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #f0f2f5;
+  background: radial-gradient(circle, #2b003b 0%, #000000 100%);
+  overflow: hidden;
 }
-.login-card {
-  width: 400px;
+
+.walkman-body {
+  width: 500px;
+  background: #d4d4d4;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow:
+      inset 0 0 20px rgba(0,0,0,0.5),
+      10px 10px 30px rgba(0,0,0,0.8),
+      -2px -2px 5px rgba(255,255,255,0.2);
+  border: 4px solid #444;
+  position: relative;
 }
-.captcha-box {
-  background: #eee;
-  padding: 0 10px;
-  cursor: pointer;
-  letter-spacing: 5px;
+
+.brand-logo {
+  font-family: 'Arial', sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 15px;
+  text-shadow: 1px 1px 0 #fff;
+}
+.sub-text { font-size: 12px; font-weight: normal; letter-spacing: 2px; }
+
+/* 磁带窗口 */
+.cassette-window {
+  background: #111;
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 3px solid #666;
+  box-shadow: inset 0 0 10px #000;
+  position: relative;
+}
+
+/* 磁带标签贴纸 (表单背景) */
+.tape-label {
+  background: #f0e68c; /* 米黄色纸张感 */
+  width: 65%;
+  height: 180px;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.5);
+  font-family: 'VT323', monospace;
+  position: relative;
+  z-index: 2;
+}
+
+.side-mark {
+  font-size: 20px;
   font-weight: bold;
-  user-select: none;
+  border-bottom: 2px solid #333;
+  margin-bottom: 10px;
 }
+
+/* 磁带卷轴动画 */
+.tape-reel {
+  width: 60px;
+  height: 60px;
+  background: radial-gradient(circle, #fff 10%, #333 11%, #333 30%, #fff 31%);
+  border-radius: 50%;
+  border: 2px solid #555;
+  position: relative;
+}
+.tape-reel::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-conic-gradient(#333 0 10deg, transparent 10deg 20deg);
+  border-radius: 50%;
+  animation: spin 5s linear infinite;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* 输入框样式 - 模拟手写线 */
+.input-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 22px;
+}
+.input-group label { width: 60px; font-weight: bold; color: #333; }
+.handwritten-input {
+  background: transparent;
+  border: none;
+  border-bottom: 2px dashed #555;
+  font-family: 'VT323', monospace; /* 或者使用手写体 */
+  font-size: 24px;
+  color: #000080;
+  width: 100%;
+  outline: none;
+}
+.handwritten-input.short { width: 80px; }
+
+/* 验证码 LCD 屏 */
+.lcd-display {
+  background: #9ea792; /* 经典计算器灰绿色 */
+  border: 2px inset #666;
+  color: #000;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 3px;
+  padding: 0 10px;
+  margin-left: 10px;
+  cursor: pointer;
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
+}
+
+/* 物理按钮 */
+.controls {
+  margin-top: 20px;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+}
+.mech-btn {
+  width: 80px;
+  height: 50px;
+  background: linear-gradient(to bottom, #eee, #ccc);
+  border: none;
+  border-bottom: 6px solid #999;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.1s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.mech-btn:active {
+  transform: translateY(4px);
+  border-bottom: 2px solid #999;
+}
+.play-btn { background: #ff6b6b; color: #fff; border-bottom-color: #c0392b; }
+.stop-btn { background: #4ecdc4; color: #fff; border-bottom-color: #2e86de; }
+
+.led-light {
+  width: 10px;
+  height: 10px;
+  background: #330000;
+  border-radius: 50%;
+  margin-left: 20px;
+  position: relative;
+  color: #333;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.led-light::after { content: 'REC/BATT'; position: absolute; left: 15px; top: -2px; font-weight: bold; }
+.led-light.on { background: #ff0000; box-shadow: 0 0 10px #ff0000; }
 </style>

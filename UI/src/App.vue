@@ -1,10 +1,10 @@
 <template>
-  <!-- 路由出口：登录页或学生页会显示在这里 -->
+
   <router-view />
 </template>
 
 <style>
-/* 全局重置样式 */
+
 html, body, #app {
   margin: 0;
   padding: 0;
