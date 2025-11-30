@@ -22,10 +22,10 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    # 👇 重点：这里已经改成了 student_info_other
+  
     url: jdbc:mysql://localhost:3306/student_info_other?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&useSSL=false
     username: root
-    password: 1110727 # 你的数据库密码
+    password: 1110727
 
   redis:
     host: localhost
