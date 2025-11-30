@@ -6,7 +6,7 @@
 ![Spring Cloud Alibaba](https://img.shields.io/badge/Spring_Cloud_Alibaba-2021.0.5-orange?style=for-the-badge&logo=spring&logoColor=white)
 ![Nacos](https://img.shields.io/badge/Nacos-Registry_%26_Config-blue?style=for-the-badge&logo=nacos&logoColor=white)
 ![Vue 3](https://img.shields.io/badge/Vue-3.0-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)
-![Style](https://img.shields.io/badge/Style-Retro_80s-ff00ff?style=for-the-badge)
+![Style](https://img.shields.io/badge/Style-Cyberpunk_Retro-ff00ff?style=for-the-badge)
 
 <p>🎹 <b>基于 Spring Cloud Alibaba 微服务架构与 80 年代复古美学的全栈实践</b> 🎹</p>
 
@@ -16,9 +16,11 @@
 
 **Retro-SIMS** 是一个基于 **Spring Cloud Alibaba (Nacos) + Redis + Vue3** 的微服务架构学生信息管理系统。
 
-本项目不仅仅是一个简单的 CRUD 演示，它具有以下特色：
-1.  **复古 UI 设计**：登录页致敬 80 年代风格，管理页采用 Synthwave（合成波）终端风格。
-2.  **微服务架构**：采用 **Gateway 网关 + 业务服务** 的经典模式，集成 Nacos 实现服务注册与发现。
+本项目不仅仅是一个简单的 CRUD 演示，它将**硬核的微服务治理**与**复古未来主义 (Retro-Futurism)** 视觉风格完美融合：
+1.  **沉浸式复古 UI**：
+    *   **登录页**：致敬 80 年代 **Sony Walkman** 磁带机设计，伴随机械按键与磁带转动动画。
+    *   **管理页**：采用 **Synthwave (合成波)** 风格，模拟绿色荧光终端机与寻呼机 (Pager) 界面，配备 CRT 扫描线滤镜。
+2.  **微服务架构**：采用 **Gateway 网关 (8080) + 业务服务 (8082)** 的经典模式，集成 Nacos 实现服务注册与发现。
 3.  **数据联动**：实现了学生与班级数据的深度联动（下拉框动态加载）。
 4.  **健壮性设计**：包含 Redis 验证码校验、全局异常处理、CORS 跨域配置及数据自动清洗。
 
@@ -29,20 +31,19 @@
 ### 系统架构
 ```text
 sims-project-root
-├── gateway (8080)   # 网关服务：负载均衡、路由转发、跨域处理
+├── gateway (8080)           # 网关服务：负载均衡、路由转发、跨域处理
 ├── Student_service (8082)   # 业务服务：核心 CRUD、Redis 交互、Nacos 注册
-└── sims-ui (前端)         # Vue3 + Vite + Element Plus (Retro Style)
+└── sims-ui (前端)             # Vue3 + Vite + Element Plus (深度定制 CSS)
 ```
 
 ### 核心技术
 *   **后端**：Java 17, Spring Boot 2.7.18, Spring Cloud Alibaba 2021.0.5
 *   **中间件**：Nacos (注册/配置中心), Redis (缓存/验证码), MySQL 8.0
-*   **前端**：Vue 3, Vite, Axios, Element Plus, Sass
-*   **ORM**：Spring Data JPA / Mybatis Plus (根据具体实现调整)
+*   **前端**：Vue 3, Vite, Axios, Element Plus, Sass, Google Fonts (VT323)
 
 ---
 
-## ⚡ 快速开始 (完美复刻步骤)
+## ⚡ 快速启动指南 (Windows环境)
 
 ### 1. 环境准备 (Prerequisites)
 请确保本地已安装以下环境：
@@ -53,7 +54,7 @@ sims-project-root
 *   **Node.js & npm**
 
 ### 2. 数据库初始化 (Database Setup)
-在 MySQL 中创建数据库 `sims_cloud`，并执行以下 SQL 脚本：
+在 MySQL 中创建数据库 `sims_cloud`，并执行以下 SQL 脚本（包含最新的 Postcode 字段）：
 
 ```sql
 CREATE DATABASE IF NOT EXISTS `sims_cloud` DEFAULT CHARACTER SET utf8mb4;
@@ -95,50 +96,28 @@ CREATE TABLE `sys_user` (
 INSERT INTO `sys_user` (username, password) VALUES ('admin', '123456');
 ```
 
-### 3. 中间件启动
+### 3. 中间件启动 (必做)
 
-#### 启动 Redis
-确保 Redis 服务已运行。
+#### 🟢 启动 Nacos
+在您的 Nacos 安装路径下（例如 `D:\nacos\nacos\bin`）打开 CMD，输入：
+```cmd
+startup.cmd -m standalone
+```
+*启动成功后访问：http://localhost:8848/nacos*
 
-#### 启动 Nacos
-进入 Nacos 的 `bin` 目录，执行启动命令：
-*   **Windows/Mac/Linux**:
-    ```bash
-    startup.cmd -m standalone
-    # 或者
-    sh startup.sh -m standalone
-    ```
-*   访问 `http://localhost:8848/nacos` (默认账号密码: `nacos`/`nacos`)。
+#### 🔴 启动 Redis
+确保本地 Redis 服务已启动。
+*   **检查方法**：按 `Ctrl + Shift + Esc` 打开任务管理器，搜索 `redis-server` 进程是否存在。
 
-### 4. 后端配置与启动
+### 4. 后端服务启动
 
-#### A. 配置 Nacos (可选，推荐)
-虽然项目支持本地 `bootstrap.yml` 配置，但建议在 Nacos 中发布配置以体验微服务特性：
-1.  **Data ID**: `sims-service-dev.yaml`
-2.  **Group**: `DEFAULT_GROUP`
-3.  **内容**:
-    ```yaml
-    spring:
-      datasource:
-        url: jdbc:mysql://localhost:3306/sims_cloud?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8
-        username: root
-        password: YOUR_PASSWORD # ⚠️ 修改为你的数据库密码
-      redis:
-        host: localhost
-        port: 6379
-        database: 0
-    ```
+1.  **启动 `Student_service` (8082)**:
+    *   确保 `bootstrap.yml` 中 Nacos 地址配置正确。
+    *   IDEA 中运行主启动类，或使用命令：`mvn spring-boot:run`。
+2.  **启动 `gateway` (8080)**:
+    *   启动后，网关会自动从 Nacos 拉取 `studentmanage-test` 服务列表。
 
-#### B. 启动服务
-1.  **启动 `sims-service`**: 
-    *   修改 `bootstrap.yml` 中的 Nacos 地址（如果不是 localhost）。
-    *   运行主启动类。
-    *   *注意：服务名需为 `sims-service` 或 `studentmanage-test` (需与网关路由一致)。*
-2.  **启动 `sims-gateway`**:
-    *   确保端口为 `8080`。
-    *   启动后，网关会自动从 Nacos 拉取服务列表。
-
-### 5. 前端启动
+### 5. 前端 UI 启动
 进入 `sims-ui` 目录：
 
 ```bash
@@ -152,33 +131,38 @@ npm run dev
 
 ---
 
-## 🕹️ 功能演示
+## 🕹️ 界面与功能演示
 
-### 1. 复古登录 (Login)
-*   **风格**：Sony Walkman 磁带机元素。
-*   **操作**：输入 `admin` / `123456`，点击验证码区域刷新图片（Redis 缓存），点击 "PLAY/LOGIN" 按钮登录。
+### 1. 📼 磁带机登录 (Walkman Login)
+*   **视觉风格**：Sony Walkman 实体风格，手写标签式输入框。
+*   **交互细节**：
+    *   点击 **LCD 屏幕** 刷新 Redis 验证码。
+    *   点击 **PLAY (▶)** 按钮提交登录。
+    *   点击 **STOP (■)** 按钮重置表单。
+    *   **REC/BATT** 指示灯在请求时会亮起红灯。
 
-### 2. 终端管理 (Dashboard)
-*   **风格**：Synthwave 霓虹终端。
-*   **操作**：
-    *   **查询**：支持按姓名模糊搜索。
-    *   **新增**：点击 "INSERT"，班级下拉框会自动从数据库加载选项。
-    *   **修改/删除**：实时同步数据库。
+### 2. 📟 赛博终端管理 (Cyber Terminal)
+*   **视觉风格**：黑底绿字荧光屏，配备 CRT 扫描线滤镜，VT323 像素字体。
+*   **交互细节**：
+    *   **查询**：命令行风格的搜索栏。
+    *   **表格**：高对比度霓虹边框，包含像素风头像生成。
+    *   **弹窗**：高亮荧光边框与深色遮罩，解决传统弹窗在深色模式下对比度不足的问题。
+    *   **时钟**：右上角实时显示系统时间，模拟寻呼机状态栏。
 
 ---
 
-## 🛠️ 常见问题与解决方案 (Troubleshooting)
+## 🛠️ 踩坑指南与解决方案 (Troubleshooting)
 
-如果在运行过程中遇到问题，请参考以下实战经验总结：
+在项目开发过程中遇到的典型问题及解决方案汇总：
 
-| 问题现象 | 可能原因 | 解决方案 |
+| 问题分类 | 现象描述 | 解决方案 |
 | :--- | :--- | :--- |
-| **Gateway 报错 503/500** | 找不到服务实例 | 1. 确保后端服务已成功注册到 Nacos。<br>2. 检查网关 `pom.xml` 是否引入了 `spring-cloud-starter-loadbalancer`。<br>3. 检查路由配置 `lb://服务名` 是否拼写正确。 |
-| **Gateway 报错 Invalid host** | 服务名含下划线 | Spring Cloud 规范建议服务名使用中划线（如 `sims-service`），不要使用下划线（`sims_service`）。 |
-| **数据库报错 Data truncation** | 字段超长 | 检查前端输入框，添加 `maxlength` 属性（例如学号限制8位，班级号限制3位）。 |
-| **数据库报错 Non-null constraint** | 必填项为空 | 后端 Service 层增加了增强逻辑：如果前端未传 `Entrance_date`，后端自动填充当前时间；未传 `Sdept`，填充默认院系。 |
-| **日期显示异常** | 格式化问题 | 实体类日期字段需添加注解：`@JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")`。 |
-| **前后端跨域 (CORS)** | 网关未配置 | 在 Gateway 的配置类中添加全局 CORS 过滤器，允许 `AllowedOrigins: *`。 |
+| **微服务网关** | **Gateway 报错 503/500** <br> *(Unable to find instance)* | 1. 确保 `Student_service` 已成功注册到 Nacos。<br>2. 检查 Gateway 的 `pom.xml` 是否引入了 `spring-cloud-starter-loadbalancer` (移除 Ribbon 后的必须项)。<br>3. 检查 `routes` 配置中 `lb://` 后的服务名是否与 Nacos 中一致。 |
+| **Vite 构建** | **[plugin:vite:vue] At least one template is required** | `App.vue` 文件为空导致。需在 `App.vue` 中添加 `<template><router-view/></template>` 作为路由出口。 |
+| **UI 体验** | **页面加载前白屏闪烁** | 在 `index.html` 的 `<style>` 中设置 `body { background-color: #000; }`，并添加 `SYSTEM_INITIALIZING...` 的 Loading 动画。 |
+| **数据库** | **Data truncation / Non-null constraint** | 1. **字段超长**：前端 `el-input` 增加 `maxlength` 限制。<br> 2. **必填项为空**：后端 Service 层增加增强逻辑，自动填充 `Entrance_date` (当前时间) 和 `Sdept` (默认院系)。 |
+| **视觉设计** | **弹窗内容看不清** | 针对 Element Plus 的 Dialog 进行深度 CSS 覆盖：加深遮罩层透明度，将输入框背景改为深墨绿，边框改为高亮荧光绿，并加粗文字权重。 |
+| **跨域问题** | **CORS Error** | 在 Gateway 的配置类中添加全局 `CorsWebFilter`，允许 `AllowedOrigins: *`。 |
 
 ---
 
