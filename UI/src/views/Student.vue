@@ -110,7 +110,7 @@
           <el-input v-model="form.sno" :disabled="!!form.sno && dialog.title === '修改学生'" placeholder="8 CHARS" maxlength="8" class="cyber-input-inner"/>
         </el-form-item>
         <el-form-item label="NAME" prop="sname">
-          <el-input v-model="form.sname" class="cyber-input-inner"/>
+          <el-input v-model="form.sname" placeholder="Max lenth 8" class="cyber-input-inner"/>
         </el-form-item>
         <el-form-item label="GENDER" prop="sex">
           <el-radio-group v-model="form.sex">
@@ -469,7 +469,8 @@ onUnmounted(() => {
   border-color: #0f0;
 }
 .cyber-radio .el-radio__input.is-checked + .el-radio__label {
-  color: #0f0 !important; /* 选中后文字变绿 */
+  color: #000000 !important; /* 选中后文字变绿 */
+  text-shadow: 1px 1px 0 #ff00ff;
 }
 
 /* 日期选择器优化 */
