@@ -96,26 +96,64 @@ CREATE TABLE `sys_user` (
 INSERT INTO `sys_user` (username, password) VALUES ('admin', '123456');
 ```
 
-### 3. 中间件启动 (必做)
+根据你最近遇到的 **MySQL 8.0 连接报错**（Public Key Retrieval）以及 **数据过长导致 500 错误**（姓名超长），我重新优化了运行步骤和踩坑指南。
 
-#### 🟢 启动 Nacos
+请使用以下内容替换你 `README.md` 中的对应部分：
+
+---
+
+### 3. 中间件启动与配置 (关键步骤)
+
+#### 🟢 步骤 A：启动 Nacos
 在您的 Nacos 安装路径下（例如 `D:\nacos\nacos\bin`）打开 CMD，输入：
 ```cmd
 startup.cmd -m standalone
 ```
-*启动成功后访问：http://localhost:8848/nacos*
+*启动成功后访问：http://localhost:8848/nacos (默认账号密码: nacos/nacos)*
 
-#### 🔴 启动 Redis
+#### ⚠️ 步骤 B：配置 Nacos (必做！)
+**为了防止 MySQL 8.0 连接报错，必须在 Nacos 控制台发布配置。**
+1.  进入 **配置管理 -> 配置列表**。
+2.  新建或编辑 Data ID: `studentmanage-test-dev.yaml` (Group: DEFAULT_GROUP)。
+3.  **配置内容** (注意 `allowPublicKeyRetrieval=true`)：
+    ```yaml
+    spring:
+      datasource:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        # 👇 关键：必须添加 &allowPublicKeyRetrieval=true，否则连接失败
+        url: jdbc:mysql://localhost:3306/student_info_other?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
+        username: root
+        password: YOUR_PASSWORD  # ⚠️ 修改为你的数据库密码
+      redis:
+        host: localhost
+        port: 6379
+        database: 0
+      jpa:
+        show-sql: true
+        database-platform: org.hibernate.dialect.MySQL8Dialect
+        hibernate:
+          ddl-auto: update
+    ```
+4.  点击 **发布**。
+
+#### 🔴 步骤 C：启动 Redis
 确保本地 Redis 服务已启动。
-*   **检查方法**：按 `Ctrl + Shift + Esc` 打开任务管理器，搜索 `redis-server` 进程是否存在。
+*   **检查方法**：按 `Ctrl + Shift + Esc` 打开任务管理器，搜索 `redis-server` 进程。
 
 ### 4. 后端服务启动
 
 1.  **启动 `Student_service` (8082)**:
-    *   确保 `bootstrap.yml` 中 Nacos 地址配置正确。
-    *   IDEA 中运行主启动类，或使用命令：`mvn spring-boot:run`。
+*   IDEA 中运行主启动类 `StudentsManageSysApplication`,在service路径下运行：
+```cmd
+mvn spring-boot:run
+```
+* **验证**：观察控制台日志，确保没有 `Public Key Retrieval is not allowed` 报错，且成功加载 Nacos 配置。
 2.  **启动 `gateway` (8080)**:
-    *   启动后，网关会自动从 Nacos 拉取 `studentmanage-test` 服务列表。
+    在gateway路径下运行：
+```cmd
+mvn spring-boot:run
+```
+*   启动后，网关会自动从 Nacos 拉取服务列表。
 
 ### 5. 前端 UI 启动
 进入 `sims-ui` 目录：
@@ -157,14 +195,12 @@ npm run dev
 
 | 问题分类 | 现象描述 | 解决方案 |
 | :--- | :--- | :--- |
-| **微服务网关** | **Gateway 报错 503/500** <br> *(Unable to find instance)* | 1. 确保 `Student_service` 已成功注册到 Nacos。<br>2. 检查 Gateway 的 `pom.xml` 是否引入了 `spring-cloud-starter-loadbalancer` (移除 Ribbon 后的必须项)。<br>3. 检查 `routes` 配置中 `lb://` 后的服务名是否与 Nacos 中一致。 |
+| **MySQL 连接** | **后端报错：Public Key Retrieval is not allowed** | MySQL 8.0+ 在 `useSSL=false` 且使用默认加密插件时，禁止获取公钥。**解决**：在 Nacos 配置的 JDBC URL 后添加 `&allowPublicKeyRetrieval=true`。 |
+| **数据提交** | **前端报错 500 / 后端报错 Data truncation** <br> *(例如输入较长姓名时)* | 数据库字段长度不足（如 `varchar(8)`）。**解决**：1. 修改数据库表结构 `ALTER TABLE student_table MODIFY COLUMN Sname VARCHAR(20);` <br> 2. 同步放宽后端 Java 代码中的长度校验逻辑。 |
+| **微服务网关** | **Gateway 报错 503/500** <br> *(Unable to find instance)* | 1. 确保 `Student_service` 已成功注册到 Nacos。<br>2. 检查 Gateway 的 `pom.xml` 是否引入了 `spring-cloud-starter-loadbalancer`。<br>3. 检查路由配置 `lb://` 后的服务名是否与 Nacos 中一致。 |
 | **Vite 构建** | **[plugin:vite:vue] At least one template is required** | `App.vue` 文件为空导致。需在 `App.vue` 中添加 `<template><router-view/></template>` 作为路由出口。 |
 | **UI 体验** | **页面加载前白屏闪烁** | 在 `index.html` 的 `<style>` 中设置 `body { background-color: #000; }`，并添加 `SYSTEM_INITIALIZING...` 的 Loading 动画。 |
-| **数据库** | **Data truncation / Non-null constraint** | 1. **字段超长**：前端 `el-input` 增加 `maxlength` 限制。<br> 2. **必填项为空**：后端 Service 层增加增强逻辑，自动填充 `Entrance_date` (当前时间) 和 `Sdept` (默认院系)。 |
 | **视觉设计** | **弹窗内容看不清** | 针对 Element Plus 的 Dialog 进行深度 CSS 覆盖：加深遮罩层透明度，将输入框背景改为深墨绿，边框改为高亮荧光绿，并加粗文字权重。 |
-| **跨域问题** | **CORS Error** | 在 Gateway 的配置类中添加全局 `CorsWebFilter`，允许 `AllowedOrigins: *`。 |
-
----
 
 ## 📄 许可证
 本项目仅供学习交流使用。
