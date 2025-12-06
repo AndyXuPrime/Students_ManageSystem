@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.18</version> <!-- 必须修正这里，不要用 4.0.0 -->
+        <version>2.7.18</version> 
         <relativePath/>
     </parent>
 
