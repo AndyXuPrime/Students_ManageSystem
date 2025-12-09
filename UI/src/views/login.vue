@@ -40,7 +40,7 @@
           <div class="line code-line">
             <span class="label">V:</span>
             <input v-model="form.code" type="text" class="screen-input short" placeholder="CODE" maxlength="4" />
-            <span class="code-value" @click="refreshCaptcha">{{ captchaCode || '8888' }}</span>
+            <span class="code-value" @click="refreshCaptcha">{{ captchaCode || 'loading' }}</span>
           </div>
         </div>
       </div>
@@ -66,13 +66,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-// 假设api路径保持不变，实际使用请根据你的项目结构调整
-// import { getCaptcha, login } from '../api/auth.js'
-import { ElMessage } from 'element-plus'
 
-// 模拟 API 以便预览效果 (实际代码中请保留你原本的 import)
-const getCaptcha = async () => ({ uuid: '123', code: '9527' })
-const login = async () => 'mock-token'
+import { getCaptcha, login } from '../api/auth.js'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const loading = ref(false)
@@ -126,6 +122,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.code-line {
+  /* 关键属性：将整行（包括标签、输入框、验证码）变为斜体 */
+  font-style: italic;
+}
 /* =========================================
    1. 原子朋克背景样式 (Atom Punk Background)
    ========================================= */
@@ -268,9 +268,6 @@ onMounted(() => {
   to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-/* =========================================
-   2. 寻呼机本体样式 (保持原样，仅微调层级)
-   ========================================= */
 .beeper-body {
   width: 300px;
   background: #444;

@@ -80,7 +80,7 @@
           <el-table-column prop="birth" label="BIRTH_DATE" width="120" />
           <el-table-column prop="classno" label="CLASS" width="80" align="center"/>
           <el-table-column prop="sdept" label="DEPARTMENT" show-overflow-tooltip header-align="center"/>
-          <el-table-column prop="postcode" label="ZIP" width="90" align="center"/>
+          <el-table-column prop="postcode" label="POSTCODE" width="90" align="center"/>
           <el-table-column prop="homeAddr" label="COORDINATES" show-overflow-tooltip align="center"/>
 
           <el-table-column label="ACTIONS" width="160" fixed="right" align="center">
@@ -146,8 +146,8 @@
         <el-form-item label="DEPT" prop="sdept">
           <el-input v-model="form.sdept" class="retro-form-input"/>
         </el-form-item>
-        <el-form-item label="ZIP" prop="postcode">
-          <el-input v-model="form.postcode" class="retro-form-input"/>
+        <el-form-item label="POSTCODE" prop="postcode">
+          <el-input v-model="form.postcode" class="retro-form-input" placeholder="6 digit only"/>
         </el-form-item>
         <el-form-item label="ADDR" prop="homeAddr">
           <el-input v-model="form.homeAddr" class="retro-form-input"/>
