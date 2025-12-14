@@ -15,8 +15,8 @@ const routes = [
     {
         path: '/student',
         name: 'Student',
-        // 根据你之前的截图，你的是 Student.vue (大写S)
-        component: () => import('../views/Student.vue')
+        // 根据你之前的截图，你的是 MainConsole.vue (大写S)
+        component: () => import('../views/MainConsole.vue')
     }
 ]
 

@@ -5,7 +5,7 @@ export function getStudentPage(params) {
     return request({
         url: '/student/page',
         method: 'get',
-        params // { current, size, name }
+        params
     })
 }
 
