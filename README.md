@@ -32,7 +32,7 @@
 ```text
 sims-project-root
 ├── gateway (8080)           # 网关服务：负载均衡、路由转发、跨域处理
-├── Student_service (8082)   # 业务服务：核心 CRUD (Student/Class/Course/Teacher)、Redis 交互
+├── User_service (8082)   # 业务服务：核心 CRUD (Student/Class/Course/Teacher)、Redis 交互
 └── sims-ui (前端)             # Vue3 + Vite + Element Plus (深度定制 Retro CSS)
 ```
 
@@ -123,7 +123,7 @@ INSERT INTO `teacher` VALUES ('T001', 'Dr. Sbaitso', '教授'), ('T002', 'Kavins
 ```cmd
 startup.cmd -m standalone
 ```
-*启动成功后访问：http://localhost:8848/nacos (默认账号密码: nacos/nacos)*
+*启动成功后访问：http://localhost:8848/nacos*
 
 #### ⚠️ 步骤 B：配置 Nacos (必做！)
 **为了防止 MySQL 8.0 连接报错，必须在 Nacos 控制台发布配置。**
