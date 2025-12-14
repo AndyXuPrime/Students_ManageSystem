@@ -8,7 +8,7 @@
     <!-- 主控制台容器 -->
     <div class="main-panel">
 
-      <!-- 顶部 Header (保持不变，作为系统标题) -->
+      <!-- 顶部 Header -->
       <div class="panel-header">
         <div class="header-decoration">
           <span class="dot red"></span>
@@ -28,10 +28,11 @@
       <!-- 核心布局：左右分栏 -->
       <div class="console-layout">
 
-        <!-- 左侧导航栏 (模拟物理按键/磁带插槽) -->
+        <!-- 左侧导航栏 -->
         <aside class="side-nav">
           <div class="nav-label">MODULES</div>
 
+          <!-- 1. 学生管理入口 -->
           <div
               class="nav-item"
               :class="{ active: currentModule === 'student' }"
@@ -42,6 +43,18 @@
             <span class="nav-icon">👤</span>
           </div>
 
+          <!-- 2. 班级管理入口 (新增) -->
+          <div
+              class="nav-item"
+              :class="{ active: currentModule === 'class' }"
+              @click="switchModule('class')"
+          >
+            <span class="indicator"></span>
+            <span class="nav-text">CLASS_DB</span>
+            <span class="nav-icon">🏫</span>
+          </div>
+
+          <!-- 3. 课程管理入口 -->
           <div
               class="nav-item"
               :class="{ active: currentModule === 'course' }"
@@ -63,20 +76,20 @@
         <!-- 右侧内容区 -->
         <main class="content-area">
 
-          <!-- 1. 控制工具栏 (搜索 & 添加) -->
+          <!-- 1. 控制工具栏 -->
           <div class="control-deck">
             <div class="search-module">
-              <div class="module-label">COMMAND_LINE // {{ currentModule === 'student' ? 'FIND_STUDENT' : 'FIND_COURSE' }}</div>
+              <div class="module-label">COMMAND_LINE // SEARCH_{{ currentModule.toUpperCase() }}</div>
               <div class="input-group">
-                <!-- 动态 placeholder -->
+                <!-- 动态 Placeholder -->
                 <input
                     v-model="queryParams.keyword"
                     class="retro-input"
-                    :placeholder="currentModule === 'student' ? 'ENTER NAME OR ID...' : 'ENTER COURSE NAME...'"
+                    :placeholder="getPlaceholder()"
                     @keyup.enter="handleQuery"
                 />
 
-                <!-- 筛选下拉框 (仅课程模式显示) -->
+                <!-- 课程筛选下拉框 -->
                 <select v-if="currentModule === 'course'" v-model="queryParams.type" class="retro-select">
                   <option value="">ALL_TYPES</option>
                   <option value="必修">REQUIRED</option>
@@ -85,16 +98,16 @@
 
                 <button class="retro-btn primary" @click="handleQuery">SCAN</button>
                 <button class="retro-btn warning" @click="handleAdd">
-                  {{ currentModule === 'student' ? 'NEW_STUDENT' : 'NEW_COURSE' }}
+                  NEW_ENTRY
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- 2. 数据视窗 (根据模式切换表格) -->
+          <!-- 2. 数据视窗 -->
           <div class="data-viewport">
 
-            <!-- A. 学生表格 (完整字段展示) -->
+            <!-- A. 学生表格 -->
             <el-table
                 v-if="currentModule === 'student'"
                 :data="studentData"
@@ -104,17 +117,12 @@
                 height="100%"
                 style="width: 100%"
             >
-              <!-- 1. 学号 (固定左侧) -->
               <el-table-column prop="sno" label="ID_NO" width="100" align="center" fixed="left"/>
-
-              <!-- 2. 姓名 (固定左侧) -->
               <el-table-column prop="sname" label="IDENTITY" width="110" align="center" fixed="left">
                 <template #default="scope">
                   <span class="highlight-text">{{ scope.row.sname }}</span>
                 </template>
               </el-table-column>
-
-              <!-- 3. 头像 (视觉装饰) -->
               <el-table-column label="VISUAL" width="70" align="center">
                 <template #default="scope">
                   <div class="retro-avatar" :class="scope.row.sex === '男' ? 'av-cyan' : 'av-orange'">
@@ -122,8 +130,6 @@
                   </div>
                 </template>
               </el-table-column>
-
-              <!-- 4. 性别 -->
               <el-table-column prop="sex" label="GEN" width="70" align="center">
                 <template #default="scope">
                   <span class="gender-tag" :class="scope.row.sex === '男' ? 'tag-male' : 'tag-female'">
@@ -131,35 +137,20 @@
                   </span>
                 </template>
               </el-table-column>
-
-              <!-- 5. 出生日期 (新增) -->
               <el-table-column prop="birth" label="BIRTH_DATE" width="120" align="center">
                 <template #default="scope">
-                  <!-- 截取日期部分，防止显示时间 -->
                   <span class="mono-text">{{ scope.row.birth ? scope.row.birth.substring(0,10) : '-' }}</span>
                 </template>
               </el-table-column>
-
-              <!-- 6. 入学时间 (新增) -->
               <el-table-column prop="entranceDate" label="ENTRY_DATE" width="120" align="center">
                 <template #default="scope">
                   <span class="mono-text">{{ scope.row.entranceDate ? scope.row.entranceDate.substring(0,10) : '-' }}</span>
                 </template>
               </el-table-column>
-
-              <!-- 7. 班级 -->
               <el-table-column prop="classno" label="CLASS" width="80" align="center"/>
-
-              <!-- 8. 院系 -->
               <el-table-column prop="sdept" label="DEPT" width="150" show-overflow-tooltip header-align="center"/>
-
-              <!-- 9. 邮编 (新增) -->
-              <el-table-column prop="postcode" label="POSTCODE" width="100" align="center"/>
-
-              <!-- 10. 家庭住址 (新增) -->
-              <el-table-column prop="homeAddr" label="AADR" min-width="180" show-overflow-tooltip header-align="center"/>
-
-              <!-- 操作栏 (固定右侧) -->
+              <el-table-column prop="postcode" label="ZIP" width="90" align="center"/>
+              <el-table-column prop="homeAddr" label="ADDR (COORDINATES)" min-width="180" show-overflow-tooltip header-align="center"/>
               <el-table-column label="ACTIONS" width="140" fixed="right" align="center">
                 <template #default="scope">
                   <div class="action-group">
@@ -170,7 +161,37 @@
               </el-table-column>
             </el-table>
 
-            <!-- B. 课程表格 (新增) -->
+            <!-- B. 班级表格 (新增) -->
+            <el-table
+                v-if="currentModule === 'class'"
+                :data="classData"
+                class="retro-table"
+                v-loading="loading"
+                element-loading-background="rgba(30, 39, 46, 0.8)"
+                height="100%"
+                style="width: 100%"
+            >
+              <el-table-column prop="classno" label="CLASS_NO" width="150" align="center" fixed="left">
+                <template #default="scope">
+                  <span class="highlight-text">{{ scope.row.classno }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="major" label="MAJOR_NAME" show-overflow-tooltip>
+                <template #default="scope">
+                  <span class="mono-text" style="font-size: 16px;">{{ scope.row.major }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="ACTIONS" width="140" fixed="right" align="center">
+                <template #default="scope">
+                  <div class="action-group">
+                    <button class="icon-btn edit" @click="handleEdit(scope.row)">✎</button>
+                    <button class="icon-btn del" @click="handleDelete(scope.row.classno)">✖</button>
+                  </div>
+                </template>
+              </el-table-column>
+            </el-table>
+
+            <!-- C. 课程表格 -->
             <el-table
                 v-if="currentModule === 'course'"
                 :data="courseData"
@@ -209,7 +230,7 @@
               </el-table-column>
             </el-table>
 
-            <!-- 分页 (共用) -->
+            <!-- 分页 -->
             <div class="panel-footer">
               <el-pagination
                   v-model:current-page="queryParams.current"
@@ -231,18 +252,17 @@
     <el-dialog
         :title="dialog.title"
         v-model="dialog.visible"
-        width="480px"
+        width="550px"
         @close="resetForm"
         class="retro-dialog"
         :show-close="false"
     >
       <div class="dialog-stripe"></div>
 
-      <el-form :model="form" ref="formRef" label-width="100px" :rules="currentModule === 'student' ? studentRules : courseRules" class="retro-form">
+      <el-form :model="form" ref="formRef" label-width="90px" :rules="getRules()" class="retro-form">
 
-        <!-- ================= 学生表单 (完整字段) ================= -->
+        <!-- ================= 学生表单 ================= -->
         <template v-if="currentModule === 'student'">
-          <!-- 第一行：学号 & 姓名 -->
           <div class="form-row">
             <el-form-item label="ID_NO" prop="sno" style="width: 50%">
               <el-input v-model="form.sno" :disabled="dialog.isEdit" placeholder="8 CHARS" maxlength="8" class="retro-form-input"/>
@@ -252,7 +272,6 @@
             </el-form-item>
           </div>
 
-          <!-- 第二行：性别 & 班级 -->
           <div class="form-row">
             <el-form-item label="GEN" prop="sex" style="width: 50%">
               <el-radio-group v-model="form.sex" class="retro-radio-group">
@@ -260,25 +279,25 @@
                 <el-radio label="女" border>FEMALE</el-radio>
               </el-radio-group>
             </el-form-item>
-
+            <!-- 班级下拉框 -->
             <el-form-item label="CLASS" prop="classno" style="width: 50%">
               <el-select
                   v-model="form.classno"
                   placeholder="SELECT CLASS"
                   class="retro-select-inner"
                   popper-class="retro-select-popper"
+                  filterable
               >
                 <el-option
                     v-for="item in classList"
                     :key="item.classno"
-                    :label="item.classno + ' (' + item.major + ')'"
+                    :label="`[${item.classno}] ${item.major}`"
                     :value="item.classno"
                 />
               </el-select>
             </el-form-item>
           </div>
 
-          <!-- 第三行：出生日期 & 入学日期 -->
           <div class="form-row">
             <el-form-item label="BIRTH" prop="birth" style="width: 50%">
               <el-date-picker v-model="form.birth" type="date" value-format="YYYY-MM-DD" placeholder="YYYY-MM-DD" class="retro-date" style="width: 100%"/>
@@ -288,7 +307,6 @@
             </el-form-item>
           </div>
 
-          <!-- 第四行：院系 & 邮编 -->
           <div class="form-row">
             <el-form-item label="DEPT" prop="sdept" style="width: 50%">
               <el-input v-model="form.sdept" class="retro-form-input"/>
@@ -298,14 +316,28 @@
             </el-form-item>
           </div>
 
-          <!-- 第五行：家庭住址 (全宽) -->
           <el-form-item label="ADDR" prop="homeAddr">
             <el-input v-model="form.homeAddr" placeholder="FULL ADDRESS COORDINATES" class="retro-form-input"/>
           </el-form-item>
         </template>
 
+        <!-- ================= 班级表单 (新增) ================= -->
+        <template v-else-if="currentModule === 'class'">
+          <el-form-item label="CLASS_NO" prop="classno">
+            <el-input
+                v-model="form.classno"
+                :disabled="dialog.isEdit"
+                placeholder="3 DIGITS (e.g. 051)"
+                maxlength="3"
+                class="retro-form-input"
+            />
+          </el-form-item>
+          <el-form-item label="MAJOR" prop="major">
+            <el-input v-model="form.major" placeholder="MAJOR NAME" class="retro-form-input"/>
+          </el-form-item>
+        </template>
 
-        <!-- 课程表单 -->
+        <!-- ================= 课程表单 ================= -->
         <template v-else>
           <el-form-item label="CODE" prop="cno">
             <el-input v-model="form.cno" :disabled="dialog.isEdit" placeholder="e.g. CS101" class="retro-form-input"/>
@@ -345,99 +377,106 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
-// 引入真实的学生 API
-import { getStudentPage, addStudent, updateStudent, deleteStudent,getAllClasses } from '../api/student.js'
-// 如果有课程 API，请在此处引入，例如：
-// import { getCoursePage, addCourse, updateCourse, deleteCourse } from '../api/course.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
+// 引入 API (请确保路径正确)
+import { getStudentPage, addStudent, updateStudent, deleteStudent, getAllClasses } from '../api/student.js'
+import { addClass, updateClass, deleteClass } from '../api/class.js'
+
 // --- 1. 状态管理 ---
-const currentModule = ref('student') // 当前模块: 'student' | 'course'
+const currentModule = ref('student') // 'student' | 'class' | 'course'
 const loading = ref(false)
 const total = ref(0)
 const timeStr = ref('')
-const classList = ref([])
-// 数据源区分
-const studentData = ref([])
-const courseData = ref([])
 
-// Mock 课程数据 (用于演示，直到你接入真实后端)
+// 数据源
+const studentData = ref([])
+const classData = ref([])
+const courseData = ref([])
+const classList = ref([]) // 用于下拉框选项
+
+// Mock 课程数据
 const mockCourses = [
   {cno:'CS101', cname:'Intro to Cybernetics', credit: 4, teacher:'Dr. Sbaitso', type:'必修', period: 64},
   {cno:'HIS20', cname:'History of Synthwave', credit: 2, teacher:'Kavinsky', type:'选修', period: 32},
   {cno:'MATH9', cname:'Quantum Calculus', credit: 5, teacher:'Turing', type:'必修', period: 80},
 ]
 
-// --- 2. 通用查询参数 ---
+// --- 2. 查询参数 ---
 const queryParams = reactive({
   current: 1,
   size: 10,
-  keyword: '', // 统一使用 keyword，调用接口时再映射
-  type: ''     // 课程筛选专用
+  keyword: '',
+  type: ''
 })
 
 // --- 3. 弹窗与表单 ---
 const dialog = reactive({
   visible: false,
   title: '',
-  isEdit: false // 新增：用于判断是否为编辑模式（控制 ID 是否可改）
+  isEdit: false
 })
-
-
 
 const form = ref({})
 const formRef = ref(null)
 
-// 验证规则分离
+// 验证规则
 const studentRules = {
   sno: [{ required: true, message: 'REQUIRED', trigger: 'blur' }],
   sname: [{ required: true, message: 'REQUIRED', trigger: 'blur' }],
   sex: [{ required: true, message: 'REQUIRED', trigger: 'change' }]
 }
-
+const classRules = {
+  classno: [{ required: true, message: 'REQUIRED', trigger: 'blur' }],
+  major: [{ required: true, message: 'REQUIRED', trigger: 'blur' }]
+}
 const courseRules = {
   cno: [{ required: true, message: 'REQUIRED', trigger: 'blur' }],
   cname: [{ required: true, message: 'REQUIRED', trigger: 'blur' }],
   credit: [{ required: true, message: 'REQUIRED', trigger: 'blur' }]
 }
 
+// 动态获取当前规则
+const getRules = () => {
+  if (currentModule.value === 'student') return studentRules
+  if (currentModule.value === 'class') return classRules
+  return courseRules
+}
+
+// 获取 Placeholder
+const getPlaceholder = () => {
+  if (currentModule.value === 'student') return 'ENTER NAME OR ID...'
+  if (currentModule.value === 'class') return 'ENTER CLASS NO OR MAJOR...'
+  return 'ENTER COURSE NAME...'
+}
+
 // --- 4. 核心业务逻辑 ---
 
-// 切换模块
+// 加载班级列表 (用于下拉框)
 const fetchClassList = async () => {
   try {
     const res = await getAllClasses()
-    // 假设后端返回的是数组，例如 [{classno: '051', major: '计算机'}, ...]
     classList.value = res
   } catch (error) {
-    console.error('获取班级列表失败:', error)
+    console.error('LOAD CLASS DATA FAILED:', error)
   }
 }
-onMounted(() => {
-  getList()
-  fetchClassList() // 👈 页面初始化时加载班级
-  updateTime()
-  timer = setInterval(updateTime, 1000)
-})
 
+// 切换模块
 const switchModule = (moduleName) => {
   if (currentModule.value === moduleName) return
   currentModule.value = moduleName
-  // 重置查询条件
   queryParams.current = 1
   queryParams.keyword = ''
   queryParams.type = ''
-  // 重新获取数据
   getList()
 }
 
-// 获取数据 (分流逻辑)
+// 获取数据
 const getList = async () => {
   loading.value = true
   try {
     if (currentModule.value === 'student') {
-      // --- 学生模块：调用真实 API ---
-      // 映射参数：后端需要 name，前端通用 keyword
       const params = {
         current: queryParams.current,
         size: queryParams.size,
@@ -446,16 +485,25 @@ const getList = async () => {
       const res = await getStudentPage(params)
       studentData.value = res.content
       total.value = res.totalElements
+    } else if (currentModule.value === 'class') {
+      // 班级数据
+      const res = await getAllClasses()
+      let result = res
+      if (queryParams.keyword) {
+        result = result.filter(c =>
+            c.classno.includes(queryParams.keyword) ||
+            c.major.includes(queryParams.keyword)
+        )
+      }
+      classData.value = result
+      total.value = result.length
     } else {
-      // --- 课程模块：使用 Mock 数据 (后续替换为真实 API) ---
-      // 模拟网络延迟
+      // 课程数据 (Mock)
       await new Promise(resolve => setTimeout(resolve, 300))
       let result = mockCourses
-      // 模拟搜索
       if (queryParams.keyword) {
         result = result.filter(c => c.cname.toLowerCase().includes(queryParams.keyword.toLowerCase()))
       }
-      // 模拟筛选
       if (queryParams.type) {
         result = result.filter(c => c.type === queryParams.type)
       }
@@ -475,35 +523,37 @@ const handleQuery = () => {
   getList()
 }
 
-// 新增按钮逻辑
+// 新增
 const handleAdd = () => {
   dialog.isEdit = false
   dialog.visible = true
-
   if (currentModule.value === 'student') {
     dialog.title = 'NEW STUDENT ENTRY'
-    form.value = { sex: '男' } // 学生默认值
+    form.value = { sex: '男' }
+  } else if (currentModule.value === 'class') {
+    dialog.title = 'NEW CLASS ENTRY'
+    form.value = {}
   } else {
     dialog.title = 'NEW COURSE ENTRY'
-    form.value = { type: '必修', credit: 2 } // 课程默认值
+    form.value = { type: '必修', credit: 2 }
   }
 }
 
-// 编辑按钮逻辑
+// 编辑
 const handleEdit = (row) => {
   dialog.isEdit = true
   dialog.visible = true
-  // 深拷贝数据
   form.value = JSON.parse(JSON.stringify(row))
-
   if (currentModule.value === 'student') {
     dialog.title = 'MODIFY STUDENT'
+  } else if (currentModule.value === 'class') {
+    dialog.title = 'MODIFY CLASS'
   } else {
     dialog.title = 'MODIFY COURSE'
   }
 }
 
-// 删除逻辑
+// 删除
 const handleDelete = (id) => {
   ElMessageBox.confirm(`DELETE DATA BLOCK [${id}]?`, 'WARNING', {
     confirmButtonText: 'EXECUTE',
@@ -513,33 +563,38 @@ const handleDelete = (id) => {
   }).then(async () => {
     if (currentModule.value === 'student') {
       await deleteStudent(id)
-      ElMessage.success('DELETED SUCCESS')
+    } else if (currentModule.value === 'class') {
+      await deleteClass(id)
     } else {
-      // 课程删除 Mock
-      ElMessage.success('COURSE DELETED (MOCK)')
+      // Mock Course Delete
     }
+    ElMessage.success('DELETED SUCCESS')
     getList()
   })
 }
 
-// 提交表单
+// 提交
 const submitForm = () => {
   formRef.value.validate(async (valid) => {
     if (valid) {
       if (currentModule.value === 'student') {
-        // --- 学生提交逻辑 ---
         if (!dialog.isEdit) {
           await addStudent(form.value)
-          ElMessage.success('INSERTED SUCCESS')
         } else {
           await updateStudent(form.value)
-          ElMessage.success('UPDATED SUCCESS')
         }
+      } else if (currentModule.value === 'class') {
+        if (!dialog.isEdit) {
+          await addClass(form.value)
+        } else {
+          await updateClass(form.value)
+        }
+        // 提交班级后刷新下拉框列表
+        fetchClassList()
       } else {
-        // --- 课程提交逻辑 (Mock) ---
-        ElMessage.success('COURSE SAVED (MOCK)')
+        // Mock Course Submit
       }
-
+      ElMessage.success('OPERATION SUCCESS')
       dialog.visible = false
       getList()
     }
@@ -560,6 +615,7 @@ const updateTime = () => {
 
 onMounted(() => {
   getList()
+  fetchClassList()
   updateTime()
   timer = setInterval(updateTime, 1000)
 })
@@ -568,6 +624,7 @@ onUnmounted(() => {
   if(timer) clearInterval(timer)
 })
 </script>
+
 <style>
 :root {
   --c-bg-dark: #2c3e50;
@@ -583,7 +640,7 @@ onUnmounted(() => {
 }
 
 /* ==========================================================================
-   LAYOUT STRUCTURE (NEW)
+   LAYOUT STRUCTURE
    ========================================================================== */
 .retro-poster-container {
   height: 100vh;
@@ -612,12 +669,7 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-/* 核心分栏布局 */
-.console-layout {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
+.console-layout { display: flex; flex: 1; overflow: hidden; }
 
 /* 左侧导航 */
 .side-nav {
@@ -629,85 +681,26 @@ onUnmounted(() => {
   padding: 20px 10px;
   gap: 15px;
 }
-
-.nav-label {
-  font-family: var(--font-display);
-  color: var(--c-muted);
-  font-size: 14px;
-  text-align: center;
-  margin-bottom: 10px;
-  letter-spacing: 2px;
-}
-
+.nav-label { font-family: var(--font-display); color: var(--c-muted); font-size: 14px; text-align: center; margin-bottom: 10px; letter-spacing: 2px; }
 .nav-item {
-  height: 60px;
-  background: #34495e;
-  border: 2px solid #455a64;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  padding: 0 15px;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-  overflow: hidden;
+  height: 60px; background: #34495e; border: 2px solid #455a64; border-radius: 6px; display: flex; align-items: center; padding: 0 15px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
 }
-
-.nav-item:hover {
-  background: #3e5871;
-  border-color: var(--c-text-light);
-}
-
-.nav-item.active {
-  background: #2c3e50;
-  border-color: var(--c-primary);
-  box-shadow: inset 0 0 15px rgba(26, 188, 156, 0.2);
-}
-
-.nav-item.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  border-style: dashed;
-}
-
-.nav-text {
-  flex: 1;
-  font-weight: bold;
-  font-size: 16px;
-  color: var(--c-text-light);
-}
+.nav-item:hover { background: #3e5871; border-color: var(--c-text-light); }
+.nav-item.active { background: #2c3e50; border-color: var(--c-primary); box-shadow: inset 0 0 15px rgba(26, 188, 156, 0.2); }
+.nav-item.disabled { opacity: 0.5; cursor: not-allowed; border-style: dashed; }
+.nav-text { flex: 1; font-weight: bold; font-size: 16px; color: var(--c-text-light); }
 .nav-item.active .nav-text { color: var(--c-primary); text-shadow: 0 0 5px var(--c-primary); }
-
 .nav-icon { font-size: 20px; }
-
-/* 指示灯 */
-.indicator {
-  width: 8px; height: 8px; background: #555; border-radius: 50%; margin-right: 15px;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,1);
-}
-.nav-item.active .indicator {
-  background: var(--c-highlight);
-  box-shadow: 0 0 8px var(--c-highlight);
-}
+.indicator { width: 8px; height: 8px; background: #555; border-radius: 50%; margin-right: 15px; box-shadow: inset 0 1px 2px rgba(0,0,0,1); }
+.nav-item.active .indicator { background: var(--c-highlight); box-shadow: 0 0 8px var(--c-highlight); }
 .indicator.off { background: #330000; }
 
 /* 右侧内容区 */
-.content-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: #25303b;
-  overflow: hidden;
-}
+.content-area { flex: 1; display: flex; flex-direction: column; background: #25303b; overflow: hidden; }
 
+/* Header */
 .panel-header {
-  height: 70px;
-  background: var(--c-accent);
-  padding: 0 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 4px solid var(--c-bg-dark);
+  height: 70px; background: var(--c-accent); padding: 0 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--c-bg-dark);
 }
 .header-decoration { display: flex; gap: 8px; }
 .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.2); }
@@ -720,46 +713,21 @@ onUnmounted(() => {
 .time-value { font-weight: bold; font-size: 16px; }
 
 /* 控制栏 */
-.control-deck {
-  padding: 15px 20px;
-  border-bottom: 2px dashed var(--c-muted);
-  background: rgba(0,0,0,0.1);
-}
+.control-deck { padding: 15px 20px; border-bottom: 2px dashed var(--c-muted); background: rgba(0,0,0,0.1); }
 .module-label { color: var(--c-primary); font-size: 12px; margin-bottom: 5px; letter-spacing: 1px; }
 .input-group { display: flex; gap: 10px; }
-
 .retro-input, .retro-select {
-  background: var(--c-bg-dark);
-  border: 2px solid var(--c-muted);
-  color: var(--c-highlight);
-  padding: 8px 12px;
-  font-family: var(--font-mono);
-  font-size: 16px;
-  border-radius: 4px;
-  outline: none;
+  background: var(--c-bg-dark); border: 2px solid var(--c-muted); color: var(--c-highlight); padding: 8px 12px; font-family: var(--font-mono); font-size: 16px; border-radius: 4px; outline: none;
 }
 .retro-input:focus, .retro-select:focus { border-color: var(--c-highlight); }
 
-.mono-text {
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
-  color: var(--c-text-light);
-  opacity: 0.9;
-}
+/* 表格与文字 */
+.mono-text { font-family: 'Courier New', monospace; font-size: 14px; color: var(--c-text-light); opacity: 0.9; }
+.retro-table .el-table__cell { padding: 8px 0 !important; }
+.form-row { display: flex; gap: 15px; margin-bottom: 0px; }
 
-/* 调整表格单元格内边距，防止内容太挤 */
-.retro-table .el-table__cell {
-  padding: 8px 0 !important;
-}
-.form-row {
-  display: flex;
-  gap: 15px; /* 增加一点间距，防止两个输入框贴太紧 */
-  margin-bottom: 0px; /* 消除额外的底部间距，因为 el-form-item 自带间距 */
-}
 /* 按钮 */
-.retro-btn {
-  border: none; padding: 0 20px; font-family: var(--font-display); font-size: 16px; cursor: pointer; border-radius: 4px; transition: transform 0.1s;
-}
+.retro-btn { border: none; padding: 0 20px; font-family: var(--font-display); font-size: 16px; cursor: pointer; border-radius: 4px; transition: transform 0.1s; }
 .retro-btn:active { transform: scale(0.95); }
 .retro-btn.primary { background: var(--c-primary); color: var(--c-bg-dark); }
 .retro-btn.warning { background: var(--c-highlight); color: var(--c-bg-dark); }
@@ -767,7 +735,6 @@ onUnmounted(() => {
 
 /* 表格区域 */
 .data-viewport { flex: 1; padding: 20px; overflow: hidden; display: flex; flex-direction: column; }
-
 .retro-table {
   --el-table-bg-color: transparent !important;
   --el-table-tr-bg-color: transparent !important;
@@ -776,26 +743,19 @@ onUnmounted(() => {
   --el-table-border-color: var(--c-muted) !important;
   --el-table-text-color: var(--c-text-light) !important;
   --el-table-header-text-color: var(--c-accent) !important;
-  font-family: var(--font-mono);
-  border: 2px solid var(--c-muted) !important;
-  flex: 1; /* 撑满剩余空间 */
+  font-family: var(--font-mono); border: 2px solid var(--c-muted) !important; flex: 1;
 }
 
-/* 课程特有样式 */
 .course-tag { padding: 2px 6px; border-radius: 2px; font-size: 12px; font-weight: bold; }
 .course-tag.required { background: var(--c-danger); color: white; }
 .course-tag.elective { background: var(--c-primary); color: var(--c-bg-dark); }
 .digital-number { font-family: 'Impact'; letter-spacing: 1px; color: var(--c-highlight); font-size: 18px; }
-
-/* 头像与标签 */
 .retro-avatar { width: 30px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; }
 .av-cyan { background: var(--c-primary); }
 .av-orange { background: var(--c-accent); }
 .gender-tag { font-size: 12px; padding: 2px 6px; border-radius: 4px; border: 1px solid; }
 .tag-male { color: var(--c-primary); border-color: var(--c-primary); }
 .tag-female { color: var(--c-highlight); border-color: var(--c-highlight); }
-
-/* 操作按钮 */
 .action-group { display: flex; justify-content: center; gap: 8px; }
 .icon-btn { width: 28px; height: 28px; border-radius: 4px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .icon-btn.edit { background: var(--c-primary); color: var(--c-bg-dark); }
@@ -811,7 +771,7 @@ onUnmounted(() => {
 }
 .retro-pagination .el-pager li.is-active { background: var(--c-highlight) !important; color: var(--c-bg-dark) !important; font-weight: bold; }
 
-/* 弹窗样式 */
+/* 弹窗 */
 .retro-dialog { background: var(--c-bg-dark) !important; border: 4px solid var(--c-highlight) !important; border-radius: 10px !important; }
 .retro-dialog .el-dialog__header { background: var(--c-highlight); padding: 10px 20px; margin: 0; }
 .retro-dialog .el-dialog__title { color: var(--c-bg-dark) !important; font-family: var(--font-display); font-size: 20px; }
@@ -819,7 +779,6 @@ onUnmounted(() => {
 .retro-form .el-form-item__label { color: var(--c-primary) !important; font-family: var(--font-mono); }
 .retro-form-input .el-input__wrapper, .retro-number-input .el-input__wrapper { background-color: rgba(0,0,0,0.3) !important; box-shadow: 0 0 0 1px var(--c-muted) inset !important; }
 .retro-form-input input { color: #fff !important; font-family: var(--font-mono); }
-.form-row { display: flex; gap: 10px; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid var(--c-muted); padding-top: 10px; }
 
 /* 背景特效 */
@@ -827,4 +786,25 @@ onUnmounted(() => {
 .bg-circle { position: absolute; border-radius: 50%; z-index: 0; opacity: 0.1; }
 .circle-1 { width: 600px; height: 600px; background: var(--c-primary); top: -200px; right: -100px; }
 .circle-2 { width: 400px; height: 400px; background: var(--c-accent); bottom: -100px; left: -100px; }
+
+/* =========================================
+   RETRO SELECT STYLE (复古下拉框适配)
+   ========================================= */
+.retro-select-inner { width: 100%; }
+:deep(.retro-select-inner .el-input__wrapper) {
+  background-color: rgba(0, 0, 0, 0.3) !important; box-shadow: 0 0 0 1px var(--c-muted) inset !important; border-radius: 4px !important;
+}
+:deep(.retro-select-inner .el-input__wrapper.is-focus) { box-shadow: 0 0 0 2px var(--c-highlight) inset !important; }
+:deep(.retro-select-inner .el-input__inner) { color: var(--c-highlight) !important; font-family: var(--font-mono) !important; font-weight: bold; }
+
+.retro-select-popper {
+  background-color: var(--c-bg-dark) !important; border: 2px solid var(--c-highlight) !important; border-radius: 0px !important; box-shadow: 10px 10px 0 rgba(0,0,0,0.5) !important;
+}
+.retro-select-popper .el-select-dropdown__item { color: var(--c-text-light) !important; font-family: var(--font-mono) !important; padding: 0 15px !important; }
+.retro-select-popper .el-select-dropdown__item.hover, .retro-select-popper .el-select-dropdown__item:hover {
+  background-color: var(--c-primary) !important; color: var(--c-bg-dark) !important;
+}
+.retro-select-popper .el-select-dropdown__item.selected { color: var(--c-highlight) !important; font-weight: bold; }
+.retro-select-popper .el-select-dropdown__item.selected::after { content: '<'; position: absolute; right: 10px; font-weight: bold; }
+.retro-select-popper .el-popper__arrow { display: none; }
 </style>
