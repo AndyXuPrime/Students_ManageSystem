@@ -1,5 +1,5 @@
 server:
-  port: 8080 # 网关端口，前端所有请求都发给这个端口
+  port: 8080
 
 spring:
   application:
@@ -22,12 +22,8 @@ spring:
           predicates:
             - Path=/api/**                    # 断言：路径以 /api 开头的请求都拦截
           filters:
-            - StripPrefix=1                   # 过滤器：去掉第1层前缀 (即去掉 /api)
-            # 举例：前端请求 /api/auth/captcha -> 网关转发给 sims-service 的 /auth/captcha
+            - StripPrefix=1
 
-      # ==========================
-      # 跨域配置 (CORS) - 解决 Vue 跨域问题
-      # ==========================
       globalcors:
         cors-configurations:
           '[/**]':

@@ -23,7 +23,6 @@
     </properties>
 
     <dependencies>
-        <!-- 核心：Spring Cloud Gateway -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-gateway</artifactId>
@@ -35,14 +34,10 @@
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
         </dependency>
 
-        <!-- 负载均衡 (Gateway 必须要有 LoadBalancer 才能解析 lb://) -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-loadbalancer</artifactId>
         </dependency>
-
-        <!-- 排除 spring-boot-starter-web，防止冲突 -->
-        <!-- 注意：Gateway 自带 webflux，千万不要手动添加 spring-boot-starter-web -->
 
         <dependency>
             <groupId>org.projectlombok</groupId>
