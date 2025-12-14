@@ -32,7 +32,6 @@
         <aside class="side-nav">
           <div class="nav-label">MODULES</div>
 
-          <!-- 1. 学生管理入口 -->
           <div
               class="nav-item"
               :class="{ active: currentModule === 'student' }"
@@ -43,7 +42,6 @@
             <span class="nav-icon">👤</span>
           </div>
 
-          <!-- 2. 班级管理入口 (新增) -->
           <div
               class="nav-item"
               :class="{ active: currentModule === 'class' }"
@@ -54,7 +52,6 @@
             <span class="nav-icon">🏫</span>
           </div>
 
-          <!-- 3. 课程管理入口 -->
           <div
               class="nav-item"
               :class="{ active: currentModule === 'course' }"
@@ -65,11 +62,15 @@
             <span class="nav-icon">📚</span>
           </div>
 
-          <!-- 装饰性空插槽 -->
-          <div class="nav-item disabled">
-            <span class="indicator off"></span>
+          <!-- 解锁教师管理 -->
+          <div
+              class="nav-item"
+              :class="{ active: currentModule === 'teacher' }"
+              @click="switchModule('teacher')"
+          >
+            <span class="indicator"></span>
             <span class="nav-text">TEACHER_LOG</span>
-            <span class="nav-icon">🔒</span>
+            <span class="nav-icon">👨‍🏫</span>
           </div>
         </aside>
 
@@ -81,7 +82,6 @@
             <div class="search-module">
               <div class="module-label">COMMAND_LINE // SEARCH_{{ currentModule.toUpperCase() }}</div>
               <div class="input-group">
-                <!-- 动态 Placeholder -->
                 <input
                     v-model="queryParams.keyword"
                     class="retro-input"
@@ -89,7 +89,6 @@
                     @keyup.enter="handleQuery"
                 />
 
-                <!-- 课程筛选下拉框 -->
                 <select v-if="currentModule === 'course'" v-model="queryParams.type" class="retro-select">
                   <option value="">ALL_TYPES</option>
                   <option value="必修">REQUIRED</option>
@@ -161,7 +160,7 @@
               </el-table-column>
             </el-table>
 
-            <!-- B. 班级表格 (新增) -->
+            <!-- B. 班级表格 -->
             <el-table
                 v-if="currentModule === 'class'"
                 :data="classData"
@@ -191,7 +190,7 @@
               </el-table-column>
             </el-table>
 
-            <!-- C. 课程表格 -->
+            <!-- C. 课程表格 (已修复宽度撑满问题) -->
             <el-table
                 v-if="currentModule === 'course'"
                 :data="courseData"
@@ -199,9 +198,11 @@
                 v-loading="loading"
                 element-loading-background="rgba(30, 39, 46, 0.8)"
                 height="100%"
+                style="width: 100%"
             >
               <el-table-column prop="cno" label="COURSE_ID" width="110" align="center"/>
-              <el-table-column prop="cname" label="COURSE_NAME" width="180" show-overflow-tooltip>
+              <!-- 关键修改：使用 min-width 让其撑满 -->
+              <el-table-column prop="cname" label="COURSE_NAME" min-width="180" show-overflow-tooltip>
                 <template #default="scope">
                   <span class="highlight-text" style="color: var(--c-accent)">{{ scope.row.cname }}</span>
                 </template>
@@ -211,7 +212,11 @@
                   <span class="digital-number">{{ scope.row.credit }}</span>
                 </template>
               </el-table-column>
-              <el-table-column prop="teacher" label="INSTRUCTOR" width="120" align="center"/>
+              <el-table-column label="INSTRUCTOR" width="150" align="center">
+                <template #default="scope">
+                  <span>{{ scope.row.teacher ? scope.row.teacher.tname : 'TBD' }}</span>
+                </template>
+              </el-table-column>
               <el-table-column prop="type" label="TYPE" width="100" align="center">
                 <template #default="scope">
                   <span class="course-tag" :class="scope.row.type === '必修' ? 'required' : 'elective'">
@@ -225,6 +230,41 @@
                   <div class="action-group">
                     <button class="icon-btn edit" @click="handleEdit(scope.row)">✎</button>
                     <button class="icon-btn del" @click="handleDelete(scope.row.cno)">✖</button>
+                  </div>
+                </template>
+              </el-table-column>
+            </el-table>
+
+            <!-- D. 教师表格 (新增) -->
+            <el-table
+                v-if="currentModule === 'teacher'"
+                :data="teacherData"
+                class="retro-table"
+                v-loading="loading"
+                element-loading-background="rgba(30, 39, 46, 0.8)"
+                height="100%"
+                style="width: 100%"
+            >
+              <el-table-column prop="tno" label="TEACHER_ID" width="150" align="center" fixed="left">
+                <template #default="scope">
+                  <span class="highlight-text">{{ scope.row.tno }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="tname" label="NAME" show-overflow-tooltip>
+                <template #default="scope">
+                  <span class="mono-text" style="font-size: 16px;">{{ scope.row.tname }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="title" label="TITLE" width="150" align="center">
+                <template #default="scope">
+                  <span class="course-tag elective">{{ scope.row.title }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="ACTIONS" width="140" fixed="right" align="center">
+                <template #default="scope">
+                  <div class="action-group">
+                    <button class="icon-btn edit" @click="handleEdit(scope.row)">✎</button>
+                    <button class="icon-btn del" @click="handleDelete(scope.row.tno)">✖</button>
                   </div>
                 </template>
               </el-table-column>
@@ -321,7 +361,7 @@
           </el-form-item>
         </template>
 
-        <!-- ================= 班级表单 (新增) ================= -->
+        <!-- ================= 班级表单 ================= -->
         <template v-else-if="currentModule === 'class'">
           <el-form-item label="CLASS_NO" prop="classno">
             <el-input
@@ -338,7 +378,7 @@
         </template>
 
         <!-- ================= 课程表单 ================= -->
-        <template v-else>
+        <template v-else-if="currentModule === 'course'">
           <el-form-item label="CODE" prop="cno">
             <el-input v-model="form.cno" :disabled="dialog.isEdit" placeholder="e.g. CS101" class="retro-form-input"/>
           </el-form-item>
@@ -353,14 +393,54 @@
               <el-input v-model="form.period" class="retro-form-input"/>
             </el-form-item>
           </div>
-          <el-form-item label="TEACHER" prop="teacher">
-            <el-input v-model="form.teacher" class="retro-form-input"/>
+          <el-form-item label="TEACHER" prop="teacherTno">
+            <el-select
+                v-model="form.teacherTno"
+                placeholder="SELECT INSTRUCTOR"
+                class="retro-select-inner"
+                popper-class="retro-select-popper"
+                filterable
+            >
+              <el-option
+                  v-for="t in teacherList"
+                  :key="t.tno"
+                  :label="`${t.tname} (${t.title || 'Teacher'})`"
+                  :value="t.tno"
+              />
+            </el-select>
           </el-form-item>
           <el-form-item label="TYPE" prop="type">
             <el-radio-group v-model="form.type" class="retro-radio-group">
               <el-radio label="必修" border>REQ</el-radio>
               <el-radio label="选修" border>OPT</el-radio>
             </el-radio-group>
+          </el-form-item>
+        </template>
+
+        <!-- ================= 教师表单 (新增) ================= -->
+        <template v-else>
+          <el-form-item label="TEACHER_ID" prop="tno">
+            <el-input
+                v-model="form.tno"
+                :disabled="dialog.isEdit"
+                placeholder="ID NUMBER"
+                class="retro-form-input"
+            />
+          </el-form-item>
+          <el-form-item label="NAME" prop="tname">
+            <el-input v-model="form.tname" class="retro-form-input"/>
+          </el-form-item>
+          <el-form-item label="TITLE" prop="title">
+            <el-select
+                v-model="form.title"
+                class="retro-select-inner"
+                popper-class="retro-select-popper"
+            >
+              <el-option label="教授 (Professor)" value="教授" />
+              <el-option label="副教授 (Assoc. Prof)" value="副教授" />
+              <el-option label="讲师 (Lecturer)" value="讲师" />
+              <el-option label="助教 (Assistant)" value="助教" />
+            </el-select>
           </el-form-item>
         </template>
 
@@ -379,12 +459,14 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
-// 引入 API (请确保路径正确)
+// 引入 API
 import { getStudentPage, addStudent, updateStudent, deleteStudent, getAllClasses } from '../api/student.js'
 import { addClass, updateClass, deleteClass } from '../api/class.js'
+import { getCoursePage, addCourse, updateCourse, deleteCourse } from '../api/course.js'
+import { getAllTeachers, addTeacher, updateTeacher, deleteTeacher } from '../api/teacher.js'
 
 // --- 1. 状态管理 ---
-const currentModule = ref('student') // 'student' | 'class' | 'course'
+const currentModule = ref('student') // 'student' | 'class' | 'course' | 'teacher'
 const loading = ref(false)
 const total = ref(0)
 const timeStr = ref('')
@@ -393,14 +475,11 @@ const timeStr = ref('')
 const studentData = ref([])
 const classData = ref([])
 const courseData = ref([])
-const classList = ref([]) // 用于下拉框选项
+const teacherData = ref([])
 
-// Mock 课程数据
-const mockCourses = [
-  {cno:'CS101', cname:'Intro to Cybernetics', credit: 4, teacher:'Dr. Sbaitso', type:'必修', period: 64},
-  {cno:'HIS20', cname:'History of Synthwave', credit: 2, teacher:'Kavinsky', type:'选修', period: 32},
-  {cno:'MATH9', cname:'Quantum Calculus', credit: 5, teacher:'Turing', type:'必修', period: 80},
-]
+// 下拉框数据源
+const classList = ref([])
+const teacherList = ref([])
 
 // --- 2. 查询参数 ---
 const queryParams = reactive({
@@ -433,32 +512,40 @@ const classRules = {
 const courseRules = {
   cno: [{ required: true, message: 'REQUIRED', trigger: 'blur' }],
   cname: [{ required: true, message: 'REQUIRED', trigger: 'blur' }],
-  credit: [{ required: true, message: 'REQUIRED', trigger: 'blur' }]
+  teacherTno: [{ required: true, message: 'REQUIRED', trigger: 'change' }]
+}
+const teacherRules = {
+  tno: [{ required: true, message: 'REQUIRED', trigger: 'blur' }],
+  tname: [{ required: true, message: 'REQUIRED', trigger: 'blur' }],
+  title: [{ required: true, message: 'REQUIRED', trigger: 'change' }]
 }
 
 // 动态获取当前规则
 const getRules = () => {
   if (currentModule.value === 'student') return studentRules
   if (currentModule.value === 'class') return classRules
-  return courseRules
+  if (currentModule.value === 'course') return courseRules
+  return teacherRules
 }
 
 // 获取 Placeholder
 const getPlaceholder = () => {
   if (currentModule.value === 'student') return 'ENTER NAME OR ID...'
   if (currentModule.value === 'class') return 'ENTER CLASS NO OR MAJOR...'
-  return 'ENTER COURSE NAME...'
+  if (currentModule.value === 'course') return 'ENTER COURSE NAME...'
+  return 'ENTER TEACHER NAME...'
 }
 
 // --- 4. 核心业务逻辑 ---
 
-// 加载班级列表 (用于下拉框)
-const fetchClassList = async () => {
+// 加载基础数据 (班级 & 教师)
+const fetchBaseData = async () => {
   try {
-    const res = await getAllClasses()
-    classList.value = res
+    const [classRes, teacherRes] = await Promise.all([getAllClasses(), getAllTeachers()])
+    classList.value = classRes
+    teacherList.value = teacherRes
   } catch (error) {
-    console.error('LOAD CLASS DATA FAILED:', error)
+    console.error('LOAD BASE DATA FAILED:', error)
   }
 }
 
@@ -486,7 +573,6 @@ const getList = async () => {
       studentData.value = res.content
       total.value = res.totalElements
     } else if (currentModule.value === 'class') {
-      // 班级数据
       const res = await getAllClasses()
       let result = res
       if (queryParams.keyword) {
@@ -497,10 +583,9 @@ const getList = async () => {
       }
       classData.value = result
       total.value = result.length
-    } else {
-      // 课程数据 (Mock)
-      await new Promise(resolve => setTimeout(resolve, 300))
-      let result = mockCourses
+    } else if (currentModule.value === 'course') {
+      const res = await getCoursePage({ keyword: queryParams.keyword })
+      let result = res
       if (queryParams.keyword) {
         result = result.filter(c => c.cname.toLowerCase().includes(queryParams.keyword.toLowerCase()))
       }
@@ -508,6 +593,15 @@ const getList = async () => {
         result = result.filter(c => c.type === queryParams.type)
       }
       courseData.value = result
+      total.value = result.length
+    } else {
+      // 教师数据
+      const res = await getAllTeachers()
+      let result = res
+      if (queryParams.keyword) {
+        result = result.filter(t => t.tname.includes(queryParams.keyword) || t.tno.includes(queryParams.keyword))
+      }
+      teacherData.value = result
       total.value = result.length
     }
   } catch (error) {
@@ -533,9 +627,12 @@ const handleAdd = () => {
   } else if (currentModule.value === 'class') {
     dialog.title = 'NEW CLASS ENTRY'
     form.value = {}
-  } else {
+  } else if (currentModule.value === 'course') {
     dialog.title = 'NEW COURSE ENTRY'
     form.value = { type: '必修', credit: 2 }
+  } else {
+    dialog.title = 'NEW TEACHER ENTRY'
+    form.value = { title: '讲师' }
   }
 }
 
@@ -544,12 +641,18 @@ const handleEdit = (row) => {
   dialog.isEdit = true
   dialog.visible = true
   form.value = JSON.parse(JSON.stringify(row))
+
   if (currentModule.value === 'student') {
     dialog.title = 'MODIFY STUDENT'
   } else if (currentModule.value === 'class') {
     dialog.title = 'MODIFY CLASS'
-  } else {
+  } else if (currentModule.value === 'course') {
     dialog.title = 'MODIFY COURSE'
+    if (row.teacher) {
+      form.value.teacherTno = row.teacher.tno
+    }
+  } else {
+    dialog.title = 'MODIFY TEACHER'
   }
 }
 
@@ -565,8 +668,10 @@ const handleDelete = (id) => {
       await deleteStudent(id)
     } else if (currentModule.value === 'class') {
       await deleteClass(id)
+    } else if (currentModule.value === 'course') {
+      await deleteCourse(id)
     } else {
-      // Mock Course Delete
+      await deleteTeacher(id)
     }
     ElMessage.success('DELETED SUCCESS')
     getList()
@@ -589,10 +694,25 @@ const submitForm = () => {
         } else {
           await updateClass(form.value)
         }
-        // 提交班级后刷新下拉框列表
-        fetchClassList()
+        fetchBaseData()
+      } else if (currentModule.value === 'course') {
+        const submitData = {
+          ...form.value,
+          teacher: { tno: form.value.teacherTno }
+        }
+        if (!dialog.isEdit) {
+          await addCourse(submitData)
+        } else {
+          await updateCourse(submitData)
+        }
       } else {
-        // Mock Course Submit
+        // 教师提交逻辑
+        if (!dialog.isEdit) {
+          await addTeacher(form.value)
+        } else {
+          await updateTeacher(form.value)
+        }
+        fetchBaseData() // 刷新教师列表供课程下拉框使用
       }
       ElMessage.success('OPERATION SUCCESS')
       dialog.visible = false
@@ -615,7 +735,7 @@ const updateTime = () => {
 
 onMounted(() => {
   getList()
-  fetchClassList()
+  fetchBaseData() // 加载班级和教师数据
   updateTime()
   timer = setInterval(updateTime, 1000)
 })
