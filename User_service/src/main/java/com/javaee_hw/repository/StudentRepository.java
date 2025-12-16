@@ -9,7 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface StudentRepository extends JpaRepository<Student, String> {
 
-    // JPA 方法名查询策略：
-    // findBy + 字段名(首字母大写) + Containing (相当于 SQL 的 like %name%)
     Page<Student> findBySnameContaining(String sname, Pageable pageable);
 }

@@ -376,10 +376,10 @@ const getRules = () => {
 }
 
 const getPlaceholder = () => {
-  if (currentModule.value === 'student') return 'ENTER NAME OR ID...'
-  if (currentModule.value === 'class') return 'ENTER CLASS NO OR MAJOR...'
-  if (currentModule.value === 'course') return 'ENTER COURSE NAME...'
-  return 'ENTER TEACHER NAME OR ID...'
+  if (currentModule.value === 'student') return 'ENTER NAME '
+  if (currentModule.value === 'class') return 'ENTER NO OR MAJOR'
+  if (currentModule.value === 'course') return 'ENTER COURSE NAME'
+  return 'ENTER NAME OR ID'
 }
 
 const fetchBaseData = async () => {
@@ -714,9 +714,7 @@ onUnmounted(() => { if(timer) clearInterval(timer) })
 .circle-1 { width: 600px; height: 600px; background: var(--c-primary); top: -200px; right: -100px; }
 .circle-2 { width: 400px; height: 400px; background: var(--c-accent); bottom: -100px; left: -100px; }
 
-/* =========================================
-   RETRO SELECT STYLE (复古下拉框适配)
-   ========================================= */
+
 .retro-select-inner { width: 100%; }
 :deep(.retro-select-inner .el-input__wrapper) {
   background-color: rgba(0, 0, 0, 0.3) !important; box-shadow: 0 0 0 1px var(--c-muted) inset !important; border-radius: 4px !important;
@@ -735,9 +733,7 @@ onUnmounted(() => { if(timer) clearInterval(timer) })
 .retro-select-popper .el-select-dropdown__item.selected::after { content: '<'; position: absolute; right: 10px; font-weight: bold; }
 .retro-select-popper .el-popper__arrow { display: none; }
 
-/* =========================================
-   NEW: RESOURCE MANAGER STYLE
-   ========================================= */
+
 .retro-tabs {
   display: flex; border-bottom: 2px solid var(--c-muted); margin-bottom: 20px; background: rgba(0,0,0,0.2);
 }
