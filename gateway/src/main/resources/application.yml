@@ -16,18 +16,24 @@ spring:
           lower-case-service-id: true
 
       routes:
-        - id: sims-service-route
+        - id: resource-service-route
+          uri: lb://resource-service          # 确保 Nacos 里服务名是这个
+          predicates:
+            - Path=/api/file/**               # 👈 关键：拦截带 /api 的路径
+          filters:
+            - StripPrefix=1                   # 👈 关键：去掉 /api，发给后端 /file/search
 
+        - id: sims-service-route
           uri: lb://studentmanage-test
           predicates:
-            - Path=/api/**                    # 断言：路径以 /api 开头的请求都拦截
+            - Path=/api/**                    # 拦截剩下的 /api 请求
           filters:
             - StripPrefix=1
 
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins: "*"               # 允许所有来源 (生产环境建议指定具体域名)
-            allowedMethods: "*"               # 允许所有方法 (GET, POST, PUT, DELETE...)
-            allowedHeaders: "*"               # 允许所有请求头
-            allowCredentials: false           # 是否允许携带 Cookie (设为 true 时 allowedOrigins 不能为 *)
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: false

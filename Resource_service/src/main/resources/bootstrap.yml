@@ -1,0 +1,21 @@
+server:
+  port: 8083 # 本地端口，方便开发调试
+
+spring:
+  application:
+    name: resource-service # 服务名称，对应 Nacos 中的 Data ID (resource-service.yaml)
+
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+
+      config:
+        server-addr: ${spring.cloud.nacos.server-addr} # 引用全局地址
+        file-extension: yaml         # 配置文件后缀
+        group: DEFAULT_GROUP         # 默认分组
+        refresh-enabled: true        # 开启自动刷新 (Nacos 修改配置后，后端无需重启)
+        timeout: 5000                # 连接超时时间 (毫秒)，防止网络卡顿导致启动慢
+
+      discovery:
+        server-addr: ${spring.cloud.nacos.server-addr} # 引用全局地址
+        group: DEFAULT_GROUP
