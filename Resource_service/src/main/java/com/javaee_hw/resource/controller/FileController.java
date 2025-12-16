@@ -37,4 +37,20 @@ public class FileController {
         result.put("data", list);
         return result;
     }
+
+    @DeleteMapping("/delete/{id}")
+    public Map<String, Object> delete(@PathVariable Long id) {
+        try {
+            fileService.delete(id);
+            Map<String, Object> result = new HashMap<>();
+            result.put("code", 200);
+            result.put("msg", "删除成功");
+            return result;
+        } catch (Exception e) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("code", 500);
+            result.put("msg", "删除失败: " + e.getMessage());
+            return result;
+        }
+    }
 }
