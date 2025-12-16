@@ -35,15 +35,12 @@
           <div class="nav-item" :class="{ active: currentModule === 'student' }" @click="switchModule('student')">
             <span class="indicator"></span><span class="nav-text">STUDENT_DB</span><span class="nav-icon">👤</span>
           </div>
-
           <div class="nav-item" :class="{ active: currentModule === 'class' }" @click="switchModule('class')">
             <span class="indicator"></span><span class="nav-text">CLASS_DB</span><span class="nav-icon">🏫</span>
           </div>
-
           <div class="nav-item" :class="{ active: currentModule === 'course' }" @click="switchModule('course')">
             <span class="indicator"></span><span class="nav-text">COURSE_DATA</span><span class="nav-icon">📚</span>
           </div>
-
           <div class="nav-item" :class="{ active: currentModule === 'teacher' }" @click="switchModule('teacher')">
             <span class="indicator"></span><span class="nav-text">TEACHER_LOG</span><span class="nav-icon">👨‍🏫</span>
           </div>
@@ -52,26 +49,44 @@
         <!-- 右侧内容区 -->
         <main class="content-area">
 
-          <!-- 1. 控制工具栏 -->
+          <!-- 1. 控制工具栏 (已优化) -->
           <div class="control-deck">
             <div class="search-module">
               <div class="module-label">COMMAND_LINE // SEARCH_{{ currentModule.toUpperCase() }}</div>
               <div class="input-group">
-                <input v-model="queryParams.keyword" class="retro-input" :placeholder="getPlaceholder()" @keyup.enter="handleQuery"/>
+                <input
+                    v-model="queryParams.keyword"
+                    class="retro-input"
+                    :placeholder="getPlaceholder()"
+                    @keyup.enter="handleQuery"
+                />
+
+                <!-- 课程筛选 (按类型) -->
                 <select v-if="currentModule === 'course'" v-model="queryParams.type" class="retro-select">
                   <option value="">ALL_TYPES</option>
                   <option value="必修">REQUIRED</option>
                   <option value="选修">ELECTIVE</option>
                 </select>
+
+                <!-- 教师筛选 (按职称) - 新增 -->
+                <select v-if="currentModule === 'teacher'" v-model="queryParams.title" class="retro-select">
+                  <option value="">ALL_TITLES</option>
+                  <option value="教授">教授 (Professor)</option>
+                  <option value="副教授">副教授 (Assoc. Prof)</option>
+                  <option value="讲师">讲师 (Lecturer)</option>
+                  <option value="助教">助教 (Assistant)</option>
+                </select>
+
                 <button class="retro-btn primary" @click="handleQuery">SCAN</button>
-                <button class="retro-btn warning" @click="handleAdd">NEW_ENTRY</button>
+                <button class="retro-btn warning" @click="handleAdd">
+                  NEW_ENTRY
+                </button>
               </div>
             </div>
           </div>
 
           <!-- 2. 数据视窗 -->
           <div class="data-viewport">
-
             <!-- A. 学生表格 -->
             <el-table v-if="currentModule === 'student'" :data="studentData" class="retro-table" v-loading="loading" element-loading-background="rgba(30, 39, 46, 0.8)" height="100%" style="width: 100%">
               <el-table-column prop="sno" label="ID_NO" width="100" align="center" fixed="left"/>
@@ -178,9 +193,7 @@
       </div>
     </div>
 
-    <!-- ================================================================================== -->
-    <!-- 升级版弹窗：支持 Tab 切换 (课程编辑模式下) -->
-    <!-- ================================================================================== -->
+    <!-- 弹窗 -->
     <el-dialog
         :title="dialogTitleDisplay"
         v-model="dialog.visible"
@@ -191,43 +204,24 @@
     >
       <div class="dialog-stripe"></div>
 
-      <!-- Tab 切换器 (仅在编辑课程时显示) -->
+      <!-- Tab 切换器 -->
       <div class="retro-tabs" v-if="currentModule === 'course' && dialog.isEdit">
-        <div class="tab-item" :class="{ active: activeTab === 'info' }" @click="activeTab = 'info'">
-          DATA_LOG
-        </div>
-        <div class="tab-item" :class="{ active: activeTab === 'files' }" @click="loadCourseFiles()">
-          RESOURCES
-        </div>
+        <div class="tab-item" :class="{ active: activeTab === 'info' }" @click="activeTab = 'info'">DATA_LOG</div>
+        <div class="tab-item" :class="{ active: activeTab === 'files' }" @click="loadCourseFiles()">RESOURCES</div>
       </div>
 
       <!-- 内容区域 -->
       <div class="dialog-content">
-
-        <!-- 1. 表单区域 (Tab: info) -->
-        <el-form
-            v-show="activeTab === 'info'"
-            :model="form"
-            ref="formRef"
-            label-width="90px"
-            :rules="getRules()"
-            class="retro-form"
-        >
+        <el-form v-show="activeTab === 'info'" :model="form" ref="formRef" label-width="90px" :rules="getRules()" class="retro-form">
           <!-- 学生表单 -->
           <template v-if="currentModule === 'student'">
             <div class="form-row">
-              <el-form-item label="ID_NO" prop="sno" style="width: 50%"><el-input v-model="form.sno" :disabled="dialog.isEdit" placeholder="8 CHARS" maxlength="8" class="retro-form-input"/></el-form-item>
+              <el-form-item label="ID_NO" prop="sno" style="width: 50%"><el-input v-model="form.sno" :disabled="dialog.isEdit" class="retro-form-input"/></el-form-item>
               <el-form-item label="NAME" prop="sname" style="width: 50%"><el-input v-model="form.sname" class="retro-form-input"/></el-form-item>
             </div>
             <div class="form-row">
-              <el-form-item label="GEN" prop="sex" style="width: 50%">
-                <el-radio-group v-model="form.sex" class="retro-radio-group"><el-radio label="男" border>MALE</el-radio><el-radio label="女" border>FEMALE</el-radio></el-radio-group>
-              </el-form-item>
-              <el-form-item label="CLASS" prop="classno" style="width: 50%">
-                <el-select v-model="form.classno" placeholder="SELECT" class="retro-select-inner" popper-class="retro-select-popper" filterable>
-                  <el-option v-for="item in classList" :key="item.classno" :label="`[${item.classno}] ${item.major}`" :value="item.classno"/>
-                </el-select>
-              </el-form-item>
+              <el-form-item label="GEN" prop="sex" style="width: 50%"><el-radio-group v-model="form.sex" class="retro-radio-group"><el-radio label="男" border>MALE</el-radio><el-radio label="女" border>FEMALE</el-radio></el-radio-group></el-form-item>
+              <el-form-item label="CLASS" prop="classno" style="width: 50%"><el-select v-model="form.classno" placeholder="SELECT" class="retro-select-inner" popper-class="retro-select-popper" filterable><el-option v-for="item in classList" :key="item.classno" :label="`[${item.classno}] ${item.major}`" :value="item.classno"/></el-select></el-form-item>
             </div>
             <div class="form-row">
               <el-form-item label="BIRTH" prop="birth" style="width: 50%"><el-date-picker v-model="form.birth" type="date" value-format="YYYY-MM-DD" class="retro-date" style="width: 100%"/></el-form-item>
@@ -237,18 +231,18 @@
               <el-form-item label="DEPT" prop="sdept" style="width: 50%"><el-input v-model="form.sdept" class="retro-form-input"/></el-form-item>
               <el-form-item label="ZIP" prop="postcode" style="width: 50%"><el-input v-model="form.postcode" maxlength="6" class="retro-form-input"/></el-form-item>
             </div>
-            <el-form-item label="ADDR" prop="homeAddr"><el-input v-model="form.homeAddr" placeholder="FULL ADDRESS COORDINATES" class="retro-form-input"/></el-form-item>
+            <el-form-item label="ADDR" prop="homeAddr"><el-input v-model="form.homeAddr" class="retro-form-input"/></el-form-item>
           </template>
 
           <!-- 班级表单 -->
           <template v-else-if="currentModule === 'class'">
-            <el-form-item label="CLASS_NO" prop="classno"><el-input v-model="form.classno" :disabled="dialog.isEdit" placeholder="3 DIGITS" maxlength="3" class="retro-form-input"/></el-form-item>
-            <el-form-item label="MAJOR" prop="major"><el-input v-model="form.major" placeholder="MAJOR NAME" class="retro-form-input"/></el-form-item>
+            <el-form-item label="CLASS_NO" prop="classno"><el-input v-model="form.classno" :disabled="dialog.isEdit" class="retro-form-input"/></el-form-item>
+            <el-form-item label="MAJOR" prop="major"><el-input v-model="form.major" class="retro-form-input"/></el-form-item>
           </template>
 
           <!-- 课程表单 -->
           <template v-else-if="currentModule === 'course'">
-            <el-form-item label="CODE" prop="cno"><el-input v-model="form.cno" :disabled="dialog.isEdit" placeholder="e.g. CS101" class="retro-form-input"/></el-form-item>
+            <el-form-item label="CODE" prop="cno"><el-input v-model="form.cno" :disabled="dialog.isEdit" class="retro-form-input"/></el-form-item>
             <el-form-item label="TITLE" prop="cname"><el-input v-model="form.cname" class="retro-form-input"/></el-form-item>
             <div class="form-row">
               <el-form-item label="CREDIT" prop="credit" style="width: 50%"><el-input-number v-model="form.credit" :min="1" :max="10" class="retro-number-input" /></el-form-item>
@@ -266,7 +260,7 @@
 
           <!-- 教师表单 -->
           <template v-else>
-            <el-form-item label="TEACHER_ID" prop="tno"><el-input v-model="form.tno" :disabled="dialog.isEdit" placeholder="ID NUMBER" class="retro-form-input"/></el-form-item>
+            <el-form-item label="TEACHER_ID" prop="tno"><el-input v-model="form.tno" :disabled="dialog.isEdit" class="retro-form-input"/></el-form-item>
             <el-form-item label="NAME" prop="tname"><el-input v-model="form.tname" class="retro-form-input"/></el-form-item>
             <el-form-item label="TITLE" prop="title">
               <el-select v-model="form.title" class="retro-select-inner" popper-class="retro-select-popper">
@@ -276,30 +270,22 @@
           </template>
         </el-form>
 
-        <!-- 2. 资源管理面板 (Tab: files) -->
+        <!-- 资源管理面板 -->
         <div v-show="activeTab === 'files'" class="resource-manager">
-          <!-- 上传区 -->
           <div class="upload-zone">
             <input type="file" ref="fileInput" style="display: none" @change="handleUploadFile">
             <button class="retro-btn warning full-width" @click="$refs.fileInput.click()" :disabled="fileUploading">
               {{ fileUploading ? 'TRANSMITTING DATA...' : '[+] INSERT NEW DATA DISK' }}
             </button>
           </div>
-
-          <!-- 文件列表 (模拟 DOS 目录结构) -->
           <div class="file-list-container">
             <div class="file-header">
-              <span>FILENAME</span>
-              <span>TYPE</span>
-              <span>ACT</span>
+              <span>FILENAME</span><span>TYPE</span><span>ACT</span>
             </div>
             <div class="file-body" v-loading="fileLoading" element-loading-background="rgba(0,0,0,0.5)">
               <div v-if="courseFiles.length === 0" class="empty-state">NO_DATA_FOUND_ON_DISK</div>
-
               <div v-for="file in courseFiles" :key="file.id" class="file-row">
-                <div class="file-name" :title="file.fileName">
-                  <span class="file-icon">📄</span> {{ file.fileName }}
-                </div>
+                <div class="file-name" :title="file.fileName"><span class="file-icon">📄</span> {{ file.fileName }}</div>
                 <div class="file-type">{{ file.fileType }}</div>
                 <div class="file-actions">
                   <button class="mini-btn download" @click="downloadFile(file.fileUrl)" title="DOWNLOAD">⬇</button>
@@ -309,13 +295,11 @@
             </div>
           </div>
         </div>
-
       </div>
 
       <template #footer>
         <div class="dialog-actions">
           <button class="retro-btn ghost" @click="dialog.visible = false">EXIT</button>
-          <!-- 只有在信息 Tab 才显示提交按钮 -->
           <button v-if="activeTab === 'info'" class="retro-btn primary" @click="submitForm">EXECUTE</button>
         </div>
       </template>
@@ -332,7 +316,6 @@ import { getStudentPage, addStudent, updateStudent, deleteStudent, getAllClasses
 import { addClass, updateClass, deleteClass } from '../api/class.js'
 import { getCoursePage, addCourse, updateCourse, deleteCourse } from '../api/course.js'
 import { getAllTeachers, addTeacher, updateTeacher, deleteTeacher } from '../api/teacher.js'
-// 引入资源 API
 import { uploadFile, searchFiles, deleteFile } from '../api/resource.js'
 
 // --- 1. 状态管理 ---
@@ -350,18 +333,19 @@ const classList = ref([])
 const teacherList = ref([])
 
 // 资源管理状态
-const activeTab = ref('info') // 'info' | 'files'
+const activeTab = ref('info')
 const courseFiles = ref([])
 const fileLoading = ref(false)
 const fileUploading = ref(false)
 const fileInput = ref(null)
 
-// --- 2. 查询参数 ---
+// --- 2. 查询参数 (已优化) ---
 const queryParams = reactive({
   current: 1,
   size: 10,
-  keyword: '',
-  type: ''
+  keyword: '', // 通用关键词
+  type: '',    // 课程类型
+  title: ''    // 教师职称
 })
 
 // --- 3. 弹窗与表单 ---
@@ -370,11 +354,9 @@ const dialog = reactive({
   title: '',
   isEdit: false
 })
-
 const form = ref({})
 const formRef = ref(null)
 
-// 动态弹窗标题
 const dialogTitleDisplay = computed(() => {
   if (activeTab.value === 'files') return `RESOURCE MANAGER: ${form.value.cname || 'UNKNOWN'}`
   return dialog.title
@@ -397,10 +379,8 @@ const getPlaceholder = () => {
   if (currentModule.value === 'student') return 'ENTER NAME OR ID...'
   if (currentModule.value === 'class') return 'ENTER CLASS NO OR MAJOR...'
   if (currentModule.value === 'course') return 'ENTER COURSE NAME...'
-  return 'ENTER TEACHER NAME...'
+  return 'ENTER TEACHER NAME OR ID...'
 }
-
-// --- 4. 核心业务逻辑 ---
 
 const fetchBaseData = async () => {
   try {
@@ -413,9 +393,11 @@ const fetchBaseData = async () => {
 const switchModule = (moduleName) => {
   if (currentModule.value === moduleName) return
   currentModule.value = moduleName
+  // 重置所有筛选条件
   queryParams.current = 1
   queryParams.keyword = ''
   queryParams.type = ''
+  queryParams.title = ''
   getList()
 }
 
@@ -434,16 +416,22 @@ const getList = async () => {
       classData.value = result
       total.value = result.length
     } else if (currentModule.value === 'course') {
-      const res = await getCoursePage({ keyword: queryParams.keyword })
+      const res = await getCoursePage()
       let result = res
       if (queryParams.keyword) result = result.filter(c => c.cname.toLowerCase().includes(queryParams.keyword.toLowerCase()))
       if (queryParams.type) result = result.filter(c => c.type === queryParams.type)
       courseData.value = result
       total.value = result.length
     } else {
+      // 教师数据 (已优化搜索)
       const res = await getAllTeachers()
       let result = res
-      if (queryParams.keyword) result = result.filter(t => t.tname.includes(queryParams.keyword) || t.tno.includes(queryParams.keyword))
+      if (queryParams.keyword) {
+        result = result.filter(t => t.tname.includes(queryParams.keyword) || t.tno.includes(queryParams.keyword))
+      }
+      if (queryParams.title) {
+        result = result.filter(t => t.title === queryParams.title)
+      }
       teacherData.value = result
       total.value = result.length
     }
@@ -518,36 +506,13 @@ const resetForm = () => {
 
 // --- 资源管理逻辑 ---
 
-// 加载当前课程的文件
 const loadCourseFiles = async () => {
   activeTab.value = 'files'
   fileLoading.value = true
   try {
-    console.log("正在搜索课程:", form.value.cname) // 1. 确认课程名是否有值
-
     const res = await searchFiles(form.value.cname)
-
-    console.log("后端返回的完整数据:", res) // 2. 关键：在浏览器控制台看这个！
-
-    // 🛠️ 修复逻辑：兼容不同的响应结构
-    // 如果你的 request.js 拦截器直接返回了 data，那么 res 就是 { code: 200, data: [...] }
-    // 如果拦截器返回的是 response，那么数据在 res.data.data
-    if (Array.isArray(res)) {
-      courseFiles.value = res
-    } else if (res.data && Array.isArray(res.data)) {
-      courseFiles.value = res.data
-    } else {
-      courseFiles.value = []
-    }
-
-    console.log("最终赋值给列表的数据:", courseFiles.value)
-
-  } catch (e) {
-    console.error(e)
-    ElMessage.error('FILE SYSTEM ERROR')
-  } finally {
-    fileLoading.value = false
-  }
+    courseFiles.value = res.data || []
+  } catch (e) { ElMessage.error('FILE SYSTEM ERROR') } finally { fileLoading.value = false }
 }
 
 const handleUploadFile = async (e) => {
@@ -604,9 +569,6 @@ onUnmounted(() => { if(timer) clearInterval(timer) })
   --font-mono: 'Courier New', monospace;
 }
 
-/* ==========================================================================
-   LAYOUT STRUCTURE
-   ========================================================================== */
 .retro-poster-container {
   height: 100vh;
   background-color: var(--c-bg-dark);
