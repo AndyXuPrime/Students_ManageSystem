@@ -376,9 +376,9 @@ const getRules = () => {
 }
 
 const getPlaceholder = () => {
-  if (currentModule.value === 'student') return 'ENTER NAME '
+  if (currentModule.value === 'student') return 'SEARCH NAME / CLASS / DEPT'
   if (currentModule.value === 'class') return 'ENTER NO OR MAJOR'
-  if (currentModule.value === 'course') return 'ENTER COURSE NAME'
+  if (currentModule.value === 'course') return 'NAME / CODE / TEACHER'
   return 'ENTER NAME OR ID'
 }
 
@@ -404,30 +404,66 @@ const switchModule = (moduleName) => {
 const getList = async () => {
   loading.value = true
   try {
+    // --- 学生模块 ---
     if (currentModule.value === 'student') {
-      const params = { current: queryParams.current, size: queryParams.size, name: queryParams.keyword }
+      // 对应后端 StudentController 的参数: current, size, keyword
+      const params = {
+        current: queryParams.current,
+        size: queryParams.size,
+        keyword: queryParams.keyword // 名字改为 keyword
+      }
       const res = await getStudentPage(params)
       studentData.value = res.content
       total.value = res.totalElements
+
+      // --- 班级模块 ---
     } else if (currentModule.value === 'class') {
       const res = await getAllClasses()
       let result = res
-      if (queryParams.keyword) result = result.filter(c => c.classno.includes(queryParams.keyword) || c.major.includes(queryParams.keyword))
+      if (queryParams.keyword) {
+        // 前端过滤：班级号 或 专业名
+        const k = queryParams.keyword.toLowerCase()
+        result = result.filter(c =>
+            c.classno.toLowerCase().includes(k) ||
+            c.major.toLowerCase().includes(k)
+        )
+      }
       classData.value = result
       total.value = result.length
+
+      // --- 课程模块 (关键修改) ---
     } else if (currentModule.value === 'course') {
-      const res = await getCoursePage()
+      // 假设 api/course.js 的 getCoursePage 已经更新为接受参数，例如: return request.get('/course/list', { params })
+      // 如果没有更新 API文件，这里我们先获取所有，然后在前端做强大的多字段过滤
+      const res = await getCoursePage({ keyword: queryParams.keyword })
+
       let result = res
-      if (queryParams.keyword) result = result.filter(c => c.cname.toLowerCase().includes(queryParams.keyword.toLowerCase()))
-      if (queryParams.type) result = result.filter(c => c.type === queryParams.type)
+      // 前端多字段过滤 (兼容后端未生效的情况)
+      if (queryParams.keyword) {
+        const k = queryParams.keyword.toLowerCase()
+        result = result.filter(c =>
+            c.cname.toLowerCase().includes(k) ||       // 搜课程名
+            c.cno.toLowerCase().includes(k) ||         // 搜课号
+            (c.teacher && c.teacher.tname.toLowerCase().includes(k)) // 搜老师名
+        )
+      }
+
+      if (queryParams.type) {
+        result = result.filter(c => c.type === queryParams.type)
+      }
       courseData.value = result
       total.value = result.length
+
+      // --- 教师模块 ---
     } else {
-      // 教师数据 (已优化搜索)
       const res = await getAllTeachers()
       let result = res
       if (queryParams.keyword) {
-        result = result.filter(t => t.tname.includes(queryParams.keyword) || t.tno.includes(queryParams.keyword))
+        const k = queryParams.keyword.toLowerCase()
+        result = result.filter(t =>
+            t.tname.toLowerCase().includes(k) ||
+            t.tno.toLowerCase().includes(k)
+        )
       }
       if (queryParams.title) {
         result = result.filter(t => t.title === queryParams.title)
@@ -435,8 +471,14 @@ const getList = async () => {
       teacherData.value = result
       total.value = result.length
     }
-  } catch (error) { ElMessage.error('DATA RETRIEVAL FAILED') } finally { loading.value = false }
+  } catch (error) {
+    console.error(error)
+    ElMessage.error('DATA RETRIEVAL FAILED')
+  } finally {
+    loading.value = false
+  }
 }
+
 
 const handleQuery = () => { queryParams.current = 1; getList() }
 
@@ -508,25 +550,77 @@ const resetForm = () => {
 
 const loadCourseFiles = async () => {
   activeTab.value = 'files'
+  courseFiles.value = [] // 先清空
+
+  // 1. 获取当前弹窗中的课程名
+  const currentCourseName = form.value.cname
+  if (!currentCourseName) {
+    console.warn('没有课程名，跳过搜索')
+    return
+  }
+
   fileLoading.value = true
   try {
-    const res = await searchFiles(form.value.cname)
-    courseFiles.value = res.data || []
-  } catch (e) { ElMessage.error('FILE SYSTEM ERROR') } finally { fileLoading.value = false }
+    // 2. 发起请求
+    const res = await searchFiles(currentCourseName)
+
+    // 3. 处理响应 (关键点)
+    console.log('文件列表响应:', res) // 打开浏览器控制台(F12)看这个输出
+
+    // 情况A: 你的 request.js 拦截器直接返回了 res.data (常见情况)
+    if (res.code === 200 && Array.isArray(res.data)) {
+      courseFiles.value = res.data
+    }
+    // 情况B: 你的 request.js 返回的是 axios 原始 response
+    else if (res.data && res.data.code === 200 && Array.isArray(res.data.data)) {
+      courseFiles.value = res.data.data
+    }
+    // 情况C: 某些拦截器直接把 data 里的内容返回了
+    else if (Array.isArray(res)) {
+      courseFiles.value = res
+    }
+    // 兜底：如果上面都没匹配，打印错误方便调试
+    else {
+      console.error('无法解析文件数据，数据结构:', res)
+    }
+
+  } catch (e) {
+    console.error('获取文件列表失败:', e)
+    ElMessage.error('无法加载资源列表')
+  } finally {
+    fileLoading.value = false
+  }
 }
 
 const handleUploadFile = async (e) => {
   const file = e.target.files[0]
   if (!file) return
+
+  if (!form.value.cname) {
+    ElMessage.warning('请先填写课程名称并保存，或确认课程名不为空')
+    return
+  }
+
   fileUploading.value = true
   const formData = new FormData()
   formData.append('file', file)
   formData.append('courseName', form.value.cname)
+
   try {
-    await uploadFile(formData)
-    ElMessage.success('UPLOAD COMPLETE')
-    loadCourseFiles()
-  } catch (error) { ElMessage.error('UPLOAD FAILED') } finally { fileUploading.value = false; e.target.value = '' }
+    const res = await uploadFile(formData)
+    if(res.code === 200 || res.status === 200) {
+      ElMessage.success('上传成功')
+      loadCourseFiles() // 刷新列表
+    } else {
+      ElMessage.error(res.msg || '上传异常')
+    }
+  } catch (error) {
+    console.error(error)
+    ElMessage.error('上传失败')
+  } finally {
+    fileUploading.value = false
+    e.target.value = ''
+  }
 }
 
 const downloadFile = (url) => { window.open(url, '_blank') }

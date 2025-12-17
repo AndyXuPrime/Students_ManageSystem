@@ -17,29 +17,27 @@ public class StudentController {
     public Result<Page<Student>> page(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(required = false) String name) {
-        return Result.success(studentService.getStudentPage(current, size, name));
+            @RequestParam(required = false) String keyword) { // 参数名改为 keyword
+        // 注意：这里假设你已经在 Service 层实现了 getStudentPageByKeyword 逻辑
+        // 如果 Service 没改，你需要去 ServiceImpl 里调用 repository.findByKeyword
+        return Result.success(studentService.getStudentPage(current, size, keyword));
     }
 
+    // ... 其他方法保持不变 (save, update, delete, getOne) ...
     @PostMapping
     public Result<Student> save(@RequestBody Student student) {
-        if (studentService.getStudentById(student.getSno()) != null) {
-            return Result.error("学号已存在");
-        }
+        if (studentService.getStudentById(student.getSno()) != null) return Result.error("学号已存在");
         return Result.success(studentService.saveStudent(student));
     }
-
     @PutMapping
     public Result<Student> update(@RequestBody Student student) {
         return Result.success(studentService.saveStudent(student));
     }
-
     @DeleteMapping("/{sno}")
     public Result<String> delete(@PathVariable String sno) {
         studentService.deleteStudent(sno);
         return Result.success("删除成功");
     }
-    
     @GetMapping("/{sno}")
     public Result<Student> getOne(@PathVariable String sno) {
         return Result.success(studentService.getStudentById(sno));

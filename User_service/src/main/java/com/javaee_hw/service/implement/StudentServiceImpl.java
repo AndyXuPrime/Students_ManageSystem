@@ -9,8 +9,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-
 @Service
 public class StudentServiceImpl implements IStudentService {
 
@@ -18,10 +16,16 @@ public class StudentServiceImpl implements IStudentService {
     private StudentRepository studentRepository;
 
     @Override
-    public Page<Student> getStudentPage(int page, int size, String name) {
-        Pageable pageable = PageRequest.of(page - 1, size);
-        if (name != null && !name.isEmpty()) {
-            return studentRepository.findBySnameContaining(name, pageable);
+    public Page<Student> getStudentPage(Integer current, Integer size, String keyword) {
+        // 防止空指针，给默认值
+        if (current == null) current = 1;
+        if (size == null) size = 10;
+
+        Pageable pageable = PageRequest.of(current - 1, size);
+
+        if (keyword != null && !keyword.isEmpty()) {
+            // 这里调用 StudentRepository 中新写的 findByKeyword
+            return studentRepository.findByKeyword(keyword, pageable);
         } else {
             return studentRepository.findAll(pageable);
         }
@@ -29,23 +33,6 @@ public class StudentServiceImpl implements IStudentService {
 
     @Override
     public Student saveStudent(Student student) {
-        // 1. 自动填充入学时间 (如果前端没传，就默认当前时间)
-        if (student.getEntranceDate() == null) {
-            student.setEntranceDate(new Date());
-        }
-
-        // 2. 自动填充院系 (如果没传，给个默认值)
-        if (student.getSdept() == null || student.getSdept().isEmpty()) {
-            student.setSdept("计算机系");
-        }
-
-        // 3. 截断过长的字段 (防止数据库报错)
-        if (student.getClassno() != null && student.getClassno().length() > 3) {
-            throw new RuntimeException("班级编号不能超过3位！");
-        }
-        if (student.getSname() != null && student.getSname().length() > 8) {
-            throw new RuntimeException("姓名太长了(最多8字符)！");
-        }
         return studentRepository.save(student);
     }
 

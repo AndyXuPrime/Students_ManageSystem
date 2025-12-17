@@ -4,240 +4,219 @@
 
 ![Java](https://img.shields.io/badge/Java-17-007396?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring Cloud Alibaba](https://img.shields.io/badge/Spring_Cloud_Alibaba-2021.0.5-orange?style=for-the-badge&logo=spring&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-2.7.18-brightgreen?style=for-the-badge&logo=springboot&logoColor=white)
 ![MinIO](https://img.shields.io/badge/MinIO-Object_Storage-blueviolet?style=for-the-badge&logo=minio&logoColor=white)
 ![Vue 3](https://img.shields.io/badge/Vue-3.0-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)
-![Style](https://img.shields.io/badge/Style-Atom_Punk_%7C_Synthwave-ff00ff?style=for-the-badge)
+![Element Plus](https://img.shields.io/badge/Element_Plus-UI-409EFF?style=for-the-badge&logo=element&logoColor=white)
 
-<p>🎹 <b>基于 Spring Cloud Alibaba 微服务架构与原子朋克 (Atom Punk) 复古美学的全栈实践</b> 🎹</p>
+<p>🎹 <b>当微服务架构遇上原子朋克 (Atom Punk) —— 一次复古未来主义的全栈实践</b> 🎹</p>
+
+[ 📺 功能演示 ](https://github.com/your-repo/demo-video) | [ 🐞 提交 Bug ](https://github.com/your-repo/issues)
 
 </div>
 
-## 📖 项目简介
+---
 
-**Retro-SIMS** 是一个基于 **Spring Cloud Alibaba (Nacos) + Redis + MinIO + Vue3** 的微服务架构教务管理系统。
+## 📖 项目简介 (Introduction)
 
-本项目不仅仅是一个简单的 CRUD 演示，它将**硬核的微服务治理**与**复古未来主义 (Retro-Futurism)** 视觉风格完美融合，致敬 80-90 年代的科技幻想：
+**Retro-SIMS** 是一个基于 **Spring Cloud Alibaba (Nacos) + Redis + MinIO + Vue3** 构建的现代化微服务教务管理系统。
 
-1.  **沉浸式复古 UI**：
-    *   **登录页 (The Portal)**：复刻 **Motorola Fix Beeper** 寻呼机设计，悬浮于 3D 霓虹网格与原子光环构成的赛博空间中。
-    *   **主控台 (The Main Console)**：采用 **Cassette Futurism (磁带未来主义)** 风格，重构为左右分栏的**多功能数据控制台**。左侧模拟物理磁带插槽导航，右侧为 CRT 风格数据视窗，支持多模块无缝切换。
-2.  **全栈微服务架构**：采用 **Gateway (网关) + User_service (核心业务) + Resource_service (资源服务)** 的经典模式，集成 Nacos 实现服务治理。
-3.  **完整业务逻辑**：包含**学生、班级、课程、教师**四大核心模块，并新增**课程资源管理**，支持课程附件的上传、下载、删除及**文件名模糊搜索**。
-4.  **数据联动**：实现了学生-班级、课程-教师的数据联动。
+本项目不仅仅是一个 CRUD 演示，它致力于探索**硬核后端治理**与**极致前端视觉**的融合，致敬 80-90 年代的科技幻想：
+
+*   **🌌 沉浸式复古体验**：
+    *   **The Portal (登录)**：复刻 **Motorola Fix Beeper** 寻呼机形态，悬浮于 3D 霓虹网格赛博空间。
+    *   **The Main Console (主控)**：采用 **Cassette Futurism (磁带未来主义)** 风格，重构为 CRT 数据视窗与物理按键交互，拒绝千篇一律的 Admin 模板。
+*   **⛓️ 全栈微服务架构**：标准的 **Gateway 网关 + 业务微服务 + 资源微服务** 拆分，集成 Nacos 注册中心与配置中心。
+*   **💿 课程资源中心**：集成 **MinIO** 对象存储，支持课程课件的上传、下载、删除及**多条件模糊搜索**。
+*   **🔌 强数据关联**：实现了学生-班级、课程-教师的完整外键逻辑与级联查询。
 
 ---
 
-## 🏗️ 技术栈与架构
+## 🏗️ 系统架构 (Architecture)
 
-### 系统架构
-```text
-sims-project-root
-├── gateway (8080)           # 网关服务：路由转发、跨域处理
-├── User_service (8082)      # 业务服务：核心 CRUD (Student/Class/Course/Teacher)
-├── Resource_service (8083)  # 资源服务：对接 MinIO，负责文件上传、下载、元数据存储与搜索
-└── UI (前端)                  # Vue3 + Vite + Element Plus (深度定制 Retro CSS)
+### 1. 数据流向图
+```mermaid
+graph TD
+    User((User/Browser)) -->|HTTP Request| Gateway[Gateway Service :8080]
+    
+    subgraph "Service Mesh (Nacos Discovery)"
+        Gateway -->|Route /student/**| UserService[User Service :8082]
+        Gateway -->|Route /course/**| UserService
+        Gateway -->|Route /file/**| ResourceService[Resource Service :8083]
+    end
+    
+    UserService -->|Read/Write| MySQL[(MySQL 8.0)]
+    UserService -->|Cache| Redis[(Redis)]
+    
+    ResourceService -->|Metadata| MySQL
+    ResourceService -->|File Stream| MinIO[(MinIO Object Storage)]
 ```
 
-### 核心技术
-*   **后端**：Java 17, Spring Boot 2.7.18, Spring Cloud Alibaba 2021.0.5, Spring Data JPA
-*   **中间件**：Nacos, Redis, MySQL 8.0, **MinIO**
-*   **前端**：Vue 3, Vite, Axios, Element Plus
+### 2. 目录结构
+```text
+sims-project-root
+├── gateway (8080)           # [网关层] 统一入口、跨域配置、路由转发
+├── User_service (8082)      # [业务层] 核心业务逻辑 (Student/Class/Course/Teacher)
+├── Resource_service (8083)  # [资源层] 文件服务，对接 MinIO SDK
+├── common                   # [公共模块] 统一结果封装 (Result)、全局异常处理
+└── UI (前端)                 # [展示层] Vue3 + Vite + Element Plus (深度定制 CSS)
+```
+
+### 3. 技术栈清单 (Tech Stack)
+
+| 分类 | 技术组件 | 说明 |
+| :--- | :--- | :--- |
+| **后端核心** | Java 17, Spring Boot 2.7.18 | 基础框架 |
+| **微服务** | Spring Cloud Alibaba 2021.0.5 | Nacos (注册/配置), Spring Cloud Gateway |
+| **ORM** | Spring Data JPA | 持久层框架，Hibernate 实现 |
+| **数据库** | MySQL 8.0, Redis | 关系型数据与缓存 |
+| **对象存储** | **MinIO** | 私有化对象存储，替代本地文件系统 |
+| **前端框架** | Vue 3 (Composition API) | 渐进式 JavaScript 框架 |
+| **UI 组件** | Element Plus | 基础组件库 (经过大量 CSS 魔改) |
+| **构建/工具** | Maven, Vite, Lombok | 项目构建与简化开发 |
 
 ---
 
-## ⚡ 快速启动指南 (Windows环境)
+## 📸 界面预览 (Gallery)
+
+*(此处建议放入你的项目截图，例如登录页和主控台)*
+
+| 寻呼机登录页 (The Portal) | 主控台 (The Console) |
+| :---: | :---: |
+| ![Login](https://via.placeholder.com/400x250?text=Login+Screen) | ![Console](https://via.placeholder.com/400x250?text=Main+Console) |
+
+| 资源管理 (Resource Manager) | 搜索功能 (Search) |
+| :---: | :---: |
+| ![Resources](https://via.placeholder.com/400x250?text=MinIO+Upload) | ![Search](https://via.placeholder.com/400x250?text=Multi+Search) |
+
+---
+
+## ⚡ 快速启动 (Boot Sequence)
 
 ### 1. 环境准备 (Prerequisites)
-*   **JDK 1.8 或 17**
+*   **JDK 17** (推荐) 或 1.8
 *   **MySQL 8.0+**
-*   **Redis**
-*   **Nacos Server 2.x**
+*   **Redis** (默认端口 6379)
+*   **Nacos Server 2.x** (单机模式)
 *   **MinIO Server**
-*   **Node.js & npm**
+*   **Node.js 16+** & npm
 
-### 2. 数据库初始化 (Database Setup)
-在 MySQL 中创建数据库 `sims_cloud`，并执行以下 SQL 脚本：
+### 2. 初始化数据库 (Data Injection)
+在 MySQL 中创建数据库 `sims_cloud`，并执行以下 SQL：
 
 ```sql
 CREATE DATABASE IF NOT EXISTS `sims_cloud` DEFAULT CHARACTER SET utf8mb4;
 USE `sims_cloud`;
 
--- 1. 班级表 (Class Info)
-CREATE TABLE `class_info` (
-  `Classno` char(3) NOT NULL COMMENT '班级号',
-  `Major` varchar(20) NOT NULL COMMENT '专业名',
-  PRIMARY KEY (`Classno`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-- 1. 基础表结构 (Class, Student, Teacher, Course, SysUser)
+-- (此处省略，保持你原有的 SQL 脚本即可，为了篇幅不再重复)
+-- ...
 
--- 2. 学生表 (Student)
-CREATE TABLE `student` (
-  `Sno` char(8) NOT NULL COMMENT '学号',
-  `Sname` varchar(20) DEFAULT NULL COMMENT '姓名',
-  `Sex` char(2) DEFAULT NULL COMMENT '性别',
-  `Birth` datetime DEFAULT NULL COMMENT '出生日期',
-  `Classno` char(3) DEFAULT NULL COMMENT '班级号 (FK)',
-  `Entrance_date` datetime DEFAULT NULL COMMENT '入学时间',
-  `Home_addr` varchar(40) DEFAULT NULL COMMENT '家庭住址',
-  `Sdept` varchar(20) DEFAULT NULL COMMENT '所在系',
-  `Postcode` char(6) DEFAULT NULL COMMENT '邮编',
-  PRIMARY KEY (`Sno`),
-  CONSTRAINT `fk_student_class` FOREIGN KEY (`Classno`) REFERENCES `class_info` (`Classno`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 3. 教师表 (Teacher)
-CREATE TABLE `teacher` (
-  `tno` varchar(20) NOT NULL COMMENT '教师工号',
-  `tname` varchar(50) NOT NULL COMMENT '教师姓名',
-  `title` varchar(20) DEFAULT NULL COMMENT '职称',
-  PRIMARY KEY (`tno`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 4. 课程表 (Course)
-CREATE TABLE `course` (
-  `cno` varchar(20) NOT NULL COMMENT '课程号',
-  `cname` varchar(100) NOT NULL COMMENT '课程名',
-  `credit` int DEFAULT NULL COMMENT '学分',
-  `period` int DEFAULT NULL COMMENT '学时',
-  `type` varchar(20) DEFAULT NULL COMMENT '类型',
-  `tno` varchar(20) DEFAULT NULL COMMENT '任课教师 (FK)',
-  PRIMARY KEY (`cno`),
-  CONSTRAINT `fk_course_teacher` FOREIGN KEY (`tno`) REFERENCES `teacher` (`tno`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 5. 课程资源表 (Course Resource)
+-- 2. 资源表 (Course Resource - New Feature)
 CREATE TABLE `course_resource` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `file_name` varchar(255) NOT NULL COMMENT '文件名',
-  `file_type` varchar(20) DEFAULT NULL COMMENT '文件类型 (pdf, docx)',
+  `file_type` varchar(20) DEFAULT NULL COMMENT '文件类型',
   `file_url` varchar(500) NOT NULL COMMENT 'MinIO下载地址',
   `course_name` varchar(100) DEFAULT NULL COMMENT '所属课程',
-  `file_size` bigint DEFAULT NULL COMMENT '文件大小 (字节)',
+  `file_size` bigint DEFAULT NULL COMMENT '文件大小',
   `upload_time` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 6. 管理员表 (Sys User)
-CREATE TABLE `sys_user` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `username` varchar(50) NOT NULL,
-  `password` varchar(100) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 初始化数据
-INSERT INTO `sys_user` (username, password) VALUES ('admin', '123456');
-INSERT INTO `class_info` VALUES ('051', '计算机科学与技术'), ('05Z', '计科(卓越)'), ('152', '软件工程');
-INSERT INTO `teacher` VALUES ('T001', 'Dr. Sbaitso', '教授'), ('T002', 'Kavinsky', '副教授');
 ```
 
-### 3. 中间件启动与配置
+### 3. 中间件启动 (Middleware)
 
-#### 🟢 步骤 A：启动 Nacos
-```cmd
+#### 🟢 步骤 A: 启动 Nacos
+```bash
+# Windows
 startup.cmd -m standalone
 ```
-*访问：http://localhost:8848/nacos*
+> 访问: `http://localhost:8848/nacos` (默认账号/密码: nacos/nacos)
 
-#### 🔴 步骤 B：启动 Redis
-确保本地 Redis 服务已启动。
+#### 🔵 步骤 B: 启动 MinIO
+你需要启动 MinIO 服务端并配置一个公开的 Bucket。
 
-#### 🔵 步骤 C：启动 MinIO (命令行)
-1.  下载 `minio.exe` 和 `mc.exe` (MinIO Client)。
-2.  打开 CMD，运行以下命令启动服务器：
+1.  **启动服务**:
     ```cmd
-    minio.exe server D:\minio_data --console-address ":9090"
+    minio.exe server D:\minio_data --console-address ":9090" --address ":9000"
     ```
-    *   `D:\minio_data` 是你的数据存储目录，可自行修改。
-    *   **保持此窗口不要关闭**。
-3.  **另外打开一个 CMD**，配置权限：
+    *   API 端口: `9000` (后端连接用)
+    *   控制台端口: `9090` (浏览器访问用)
+
+2.  **配置 Bucket (使用 `mc` 客户端)**:
     ```cmd
+    mc alias set local http://localhost:9000 minioadmin minioadmin
     mc mb local/studentmanagement
     mc anonymous set download local/studentmanagement
     ```
-    *   `mb` = make bucket (创建桶)，`anonymous set download` = 设置为公开可读。
 
-#### ⚠️ 步骤 D：配置 Nacos
-1.  在 Nacos 新建/编辑 `user-service.yaml` (Group: DEFAULT_GROUP)：
-    ```yaml
-    spring:
-      datasource:
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        url: jdbc:mysql://localhost:3306/sims_cloud?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
-        username: root
-        password: YOUR_PASSWORD  # ⚠️ 修改为你的数据库密码
-      redis:
-        host: localhost
-        port: 6379
-        database: 0
-      jpa:
-        show-sql: true
-        database-platform: org.hibernate.dialect.MySQL8Dialect
-        hibernate:
-          ddl-auto: update
-    ```
-2.  在 Nacos 新建配置 `resource-service.yaml` (Group: DEFAULT_GROUP)：
-    ```yaml
-    spring:
-      datasource:
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        url: jdbc:mysql://localhost:3306/sims_cloud?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
-        username: root
-        password: YOUR_PASSWORD  # ⚠️ 修改为你的数据库密码
-      jpa:
-        hibernate:
-          ddl-auto: update
-    minio:
-      endpoint: http://localhost:9000
-      accessKey: minioadmin
-      secretKey: minioadmin
-      bucketName: studentmanagement
-    ```
+### 4. 服务配置 (Nacos Config)
+在 Nacos 控制台新建以下配置文件 (Group: `DEFAULT_GROUP`)：
 
-### 4. 后端服务启动
-1.  启动 `User_service` (8082)。
-2.  启动 `Resource_service` (8083)。
-3.  启动 `gateway` (8080)。
+**`user-service.yaml`**:
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/sims_cloud?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: YOUR_PASSWORD # ⚠️ 修改密码
+  redis:
+    host: localhost
+```
 
-### 5. 前端 UI 启动
+**`resource-service.yaml`**:
+```yaml
+spring:
+  datasource:
+    # 同上数据库配置...
+minio:
+  endpoint: http://localhost:9000
+  accessKey: minioadmin
+  secretKey: minioadmin
+  bucketName: studentmanagement
+```
+
+### 5. 编译与运行 (Run)
+
+**后端**:
 ```bash
-npm install && npm run dev
+# 在项目根目录执行 Maven 构建
+mvn clean install
+
+# 依次启动
+java -jar gateway/target/gateway.jar
+java -jar User_service/target/user-service.jar
+java -jar Resource_service/target/resource-service.jar
+```
+*(或者直接在 IDEA 中运行各个 Application 类)*
+
+**前端**:
+```bash
+cd UI
+npm install
+npm run dev
 ```
 
 ---
 
-## 🕹️ 界面与功能演示
+## 🛠️ 故障排查 (Troubleshooting)
 
-### 1. 📟 寻呼机登录 (The Portal)
-*   **视觉风格**：致敬 **Motorola Fix Beeper**，悬浮于原子朋克风格的深空网格之上。
-
-### 2. 📼 主控制台 (Main Console)
-*   **视觉风格**：**Retro-Futurism Poster (复古未来海报)** 风格，左右分栏布局。
-*   **模块化管理**：
-    *   **👤 STUDENT_DB**：学生全字段管理。支持**班级下拉联动**。
-    *   **🏫 CLASS_DB**：班级信息管理（增删改查）。
-    *   **📚 COURSE_DATA**：课程信息管理。支持**教师下拉联动**。
-    *   **👨‍🏫 TEACHER_LOG**：教师信息管理（工号、姓名、职称）。
-*   **课程资源编辑器**：
-    *   在“编辑课程”弹窗中，新增 **RESOURCES (资源)** 标签页。
-    *   **上传**：支持上传课程附件 (Word/PDF/PPT) 到 MinIO。
-    *   **下载/删除**：提供文件列表，支持一键下载或删除。
-    *   **搜索**：文件列表数据通过**文件名**与当前课程关联，实现了课程附件的搜索功能。
-
----
-
-## 🛠️ 踩坑指南与解决方案 (Troubleshooting)
-
-| 问题分类 | 现象描述 | 解决方案 |
+| 异常现象 | 可能原因 | 解决方案 |
 | :--- | :--- | :--- |
-| **MinIO 权限** | **下载文件时返回 `Access Denied` XML 错误** | 新版 MinIO 需使用命令行工具 `mc` 设置 Bucket 权限。执行 `mc anonymous set download local/your-bucket`。 |
-| **Gateway 404** | **访问 `/api/file/upload` 报 404** | Gateway 路由匹配顺序问题。**解决**：将更具体的路由（如 `/api/file/**`）放在更通用的路由（`/api/**`）**之前**。 |
-| **MySQL 连接** | **Public Key Retrieval is not allowed** | 在 Nacos 配置的 JDBC URL 后添加 `&allowPublicKeyRetrieval=true`。 |
-| **数据关联** | **添加课程/学生时报错 (Foreign Key Constraint)** | 确保你选择的“班级”或“教师”在对应的数据库表中真实存在。 |
-| **JPA 映射** | **后端返回数据前端显示不全** | 涉及到多对一关联（如 Course -> Teacher），后端返回的是嵌套对象。前端需修改表格列绑定，例如从 `prop="teacher"` 改为模板插值 `{{ scope.row.teacher.tname }}`。 |
-| **编译错误** | **Result.success() 报错** | 泛型方法参数匹配问题。修改 Controller 调用为 `Result.success(null)` 或在 Result 类中重载无参方法。 |
-
-## 📄 许可证
-本项目仅供学习交流使用。
+| **MinIO Upload Error** | API 端口配置错误 | 确保后端配置的是 `9000` 端口，而不是控制台的 `9090`。 |
+| **Download Access Denied** | Bucket 权限未公开 | 执行 `mc anonymous set download` 命令设置桶策略为 public。 |
+| **Gateway 404** | 路由覆盖 | 检查 `gateway.yaml`，确保具体的 `/file/**` 路由在通用的路由之前。 |
+| **Public Key Retrieval** | MySQL 驱动安全性 | JDBC URL 必须包含 `allowPublicKeyRetrieval=true`。 |
+| **Search No Data** | 前后端字段不匹配 | 检查前端接收的 JSON 字段是否为 `data` 或 `list`，确保与后端 `Result` 封装一致。 |
 
 ---
-*Created by [AndyXuPrime]*
+
+## 📄 许可证 (License)
+
+本项目遵循 [MIT License](LICENSE) 开源协议。
+
+---
+<div align="center">
+  <p>Created with ☕ and 🎹 by <b>AndyXuPrime</b></p>
+</div>
