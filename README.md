@@ -76,21 +76,6 @@ sims-project-root
 | **构建/工具** | Maven, Vite, Lombok | 项目构建与简化开发 |
 
 ---
-
-## 📸 界面预览 (Gallery)
-
-*(此处建议放入你的项目截图，例如登录页和主控台)*
-
-| 寻呼机登录页 (The Portal) | 主控台 (The Console) |
-| :---: | :---: |
-| ![Login](https://via.placeholder.com/400x250?text=Login+Screen) | ![Console](https://via.placeholder.com/400x250?text=Main+Console) |
-
-| 资源管理 (Resource Manager) | 搜索功能 (Search) |
-| :---: | :---: |
-| ![Resources](https://via.placeholder.com/400x250?text=MinIO+Upload) | ![Search](https://via.placeholder.com/400x250?text=Multi+Search) |
-
----
-
 ## ⚡ 快速启动 (Boot Sequence)
 
 ### 1. 环境准备 (Prerequisites)
