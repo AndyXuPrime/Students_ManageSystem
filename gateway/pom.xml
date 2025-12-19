@@ -62,6 +62,17 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- 1. Spring Retry (提供重试能力) -->
+            <dependency>
+                <groupId>org.springframework.retry</groupId>
+                <artifactId>spring-retry</artifactId>
+            </dependency>
+
+            <!-- 2. Spring AOP (Retry 需要 AOP 支持) -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-aop</artifactId>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

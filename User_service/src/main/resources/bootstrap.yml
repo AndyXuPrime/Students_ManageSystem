@@ -18,6 +18,7 @@ spring:
         file-extension: yaml
 
         refresh-enabled: true
+        fail-fast: true
 
 
   datasource:
