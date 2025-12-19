@@ -131,12 +131,22 @@ npm run dev
 
 ## 📂 项目结构
 ### 1. 数据流向图
+
 ```mermaid  
-graph TD  
-    User((User/Browser)) -->|HTTP Request| Gateway[Gateway Service :8080]        subgraph "Service Mesh (Nacos Discovery)"  
-        Gateway -->|Route /student/**| UserService[User Service :8082]        Gateway -->|Route /course/**| UserService        Gateway -->|Route /file/**| ResourceService[Resource Service :8083]    end        UserService -->|Read/Write| MySQL[(MySQL 8.0)]  
-    UserService -->|Cache| Redis[(Redis)]        ResourceService -->|Metadata| MySQL  
-    ResourceService -->|File Stream| MinIO[(MinIO Object Storage)]  
+graph TD
+    User((User/Browser)) -->|HTTP Request| Gateway[Gateway Service :8080]
+
+    subgraph "Service Mesh (Nacos Discovery)"
+        Gateway -->|Route /student/**| UserService[User Service :8082]
+        Gateway -->|Route /course/**| UserService
+        Gateway -->|Route /file/**| ResourceService[Resource Service :8083]
+    end
+
+    UserService -->|Read/Write| MySQL[(MySQL 8.0)]
+    UserService -->|Cache| Redis[(Redis)]
+
+    ResourceService -->|Metadata| MySQL
+    ResourceService -->|File Stream| MinIO[(MinIO Object Storage)]
 ```
 
 ### 2. 目录结构
