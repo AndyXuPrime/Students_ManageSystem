@@ -81,7 +81,8 @@ java -jar gateway/target/gateway-0.0.1-SNAPSHOT.jar
 java -jar User_service/target/Students_manageSys-0.0.1-SNAPSHOT.jar  
 java -jar Resource_service/target/Resource_service-0.0.1-SNAPSHOT.jar  
   
-# 4. 启动前端 UIcd UI  
+# 4. 启动前端 UI
+cd UI  
 npm install  
 npm run dev  
 ```  
@@ -91,6 +92,12 @@ npm run dev
 当前登录接口只校验验证码，`username/password` 由前端提交但后端暂未参与鉴权。
 
 更多详情: [故障排查指南](#-故障排查)
+
+### 当前实现说明
+
+- 登录接口只做验证码校验，`username/password` 暂未接入真正鉴权。
+- 课程资源会写入 MinIO 和 `course_resource` 表，搜索按文件名或课程名模糊匹配。
+- `User_service` 的实现类目录为 `com/javaee_hw/service/implement`，与当前源码路径一致。
   
 ---  
 
