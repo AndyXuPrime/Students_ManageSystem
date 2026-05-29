@@ -23,7 +23,11 @@ public class ClassInfoServiceImpl implements IClassInfoService {
     @Override
     @Transactional
     public void addClass(ClassInfo classInfo) {
-        if (classInfoRepository.existsById(classInfo.getClassno())) {
+        String classNo = classInfo.getClassno();
+        if (classNo == null || classNo.isBlank()) {
+            throw new IllegalArgumentException("班级号不能为空");
+        }
+        if (classInfoRepository.existsById(classNo)) {
             throw new RuntimeException("班级号已存在");
         }
         classInfoRepository.save(classInfo);
@@ -32,7 +36,11 @@ public class ClassInfoServiceImpl implements IClassInfoService {
     @Override
     @Transactional
     public void updateClass(ClassInfo classInfo) {
-        if (!classInfoRepository.existsById(classInfo.getClassno())) {
+        String classNo = classInfo.getClassno();
+        if (classNo == null || classNo.isBlank()) {
+            throw new IllegalArgumentException("班级号不能为空");
+        }
+        if (!classInfoRepository.existsById(classNo)) {
             throw new RuntimeException("班级不存在，无法修改");
         }
         classInfoRepository.save(classInfo);

@@ -21,7 +21,11 @@ public class TeacherServiceImpl implements ITeacherService {
     @Override
     @Transactional
     public void addTeacher(Teacher teacher) {
-        if (teacherRepository.existsById(teacher.getTno())) {
+        String tno = teacher.getTno();
+        if (tno == null || tno.isBlank()) {
+            throw new IllegalArgumentException("教师工号不能为空");
+        }
+        if (teacherRepository.existsById(tno)) {
             throw new RuntimeException("教师工号已存在");
         }
         teacherRepository.save(teacher);
@@ -30,7 +34,11 @@ public class TeacherServiceImpl implements ITeacherService {
     @Override
     @Transactional
     public void updateTeacher(Teacher teacher) {
-        if (!teacherRepository.existsById(teacher.getTno())) {
+        String tno = teacher.getTno();
+        if (tno == null || tno.isBlank()) {
+            throw new IllegalArgumentException("教师工号不能为空");
+        }
+        if (!teacherRepository.existsById(tno)) {
             throw new RuntimeException("教师不存在");
         }
         teacherRepository.save(teacher);

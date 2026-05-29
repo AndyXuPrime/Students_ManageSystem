@@ -14,4 +14,20 @@ public class ClassInfo {
 
     @Column(name = "Major", length = 20)
     private String major;   // 对应数据库 VARCHAR(20)
+
+    public String getClassno() {
+        return classno;
+    }
+
+    public void setClassno(String classno) {
+        this.classno = classno;
+    }
+
+    public String getMajor() {
+        return major;
+    }
+
+    public void setMajor(String major) {
+        this.major = major;
+    }
 }
