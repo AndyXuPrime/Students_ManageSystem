@@ -1,4 +1,4 @@
-package com.javaee_hw.service.impl;
+package com.javaee_hw.service.implement;
 
 import com.javaee_hw.entity.ClassInfo;
 import com.javaee_hw.repository.ClassInfoRepository;

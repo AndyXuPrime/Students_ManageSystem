@@ -1,4 +1,4 @@
-package com.javaee_hw.service.impl;
+package com.javaee_hw.service.implement;
 
 import com.javaee_hw.entity.Teacher;
 import com.javaee_hw.repository.TeacherRepository;
