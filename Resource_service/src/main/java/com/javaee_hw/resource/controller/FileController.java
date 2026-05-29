@@ -24,7 +24,7 @@ public class FileController {
         Map<String, Object> result = new HashMap<>();
         result.put("code", 200);
         result.put("msg", "上传成功");
-        result.put("url", url);
+        result.put("data", url);
         return result;
     }
 
@@ -45,6 +45,7 @@ public class FileController {
             Map<String, Object> result = new HashMap<>();
             result.put("code", 200);
             result.put("msg", "删除成功");
+            result.put("data", id);
             return result;
         } catch (Exception e) {
             Map<String, Object> result = new HashMap<>();

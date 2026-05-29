@@ -608,11 +608,11 @@ const handleUploadFile = async (e) => {
 
   try {
     const res = await uploadFile(formData)
-    if(res.code === 200 || res.status === 200) {
+    if (res) {
       ElMessage.success('上传成功')
       loadCourseFiles() // 刷新列表
     } else {
-      ElMessage.error(res.msg || '上传异常')
+      ElMessage.error('上传异常')
     }
   } catch (error) {
     console.error(error)
@@ -627,9 +627,14 @@ const downloadFile = (url) => { window.open(url, '_blank') }
 
 const removeFile = (id) => {
   ElMessageBox.confirm('ERASE FILE PERMANENTLY?', 'WARNING', { confirmButtonText: 'ERASE', cancelButtonText: 'CANCEL', type: 'warning', customClass: 'retro-message-box' }).then(async () => {
-    await deleteFile(id)
-    ElMessage.success('FILE DELETED')
-    loadCourseFiles()
+    try {
+      await deleteFile(id)
+      ElMessage.success('FILE DELETED')
+      loadCourseFiles()
+    } catch (error) {
+      console.error(error)
+      ElMessage.error('DELETE FAILED')
+    }
   })
 }
 

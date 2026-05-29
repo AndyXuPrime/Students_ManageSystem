@@ -15,6 +15,8 @@
 [快速开始](#-快速开始) • [功能特性](#-功能特性) • [技术栈](#️-技术栈) • [系统架构](#-系统架构)
 
 </div>  
+
+> 说明：以下内容以当前代码为准。更细的本地运行与接口说明见 [docs/项目运行说明.md](docs/项目运行说明.md)。
   
 ---  
 
@@ -75,9 +77,9 @@ mc mb local/studentmanagement
 mc anonymous set download local/studentmanagement  
   
 # 3. 启动后端微服务 (按顺序)  
-java -jar gateway/target/gateway.jar  
-java -jar User_service/target/user-service.jar  
-java -jar Resource_service/target/resource-service.jar  
+java -jar gateway/target/gateway-0.0.1-SNAPSHOT.jar  
+java -jar User_service/target/Students_manageSys-0.0.1-SNAPSHOT.jar  
+java -jar Resource_service/target/Resource_service-0.0.1-SNAPSHOT.jar  
   
 # 4. 启动前端 UIcd UI  
 npm install  
@@ -86,8 +88,7 @@ npm run dev
 
 ### 登录测试
 
-**管理员 ID**: `admin`  
-**通行码**: `123456`
+当前登录接口只校验验证码，`username/password` 由前端提交但后端暂未参与鉴权。
 
 更多详情: [故障排查指南](#-故障排查)
   
@@ -182,8 +183,9 @@ Retro-SIMS/
 
 ### 资源服务 (Resource Service)
 ```bash  
-POST   /file/upload?courseName={name}   # 上传文件 (Multipart)GET    /file/search?keyword={kw}        # 搜索文件  
-DELETE /file/delete/{id}                # 删除文件  
+POST   /api/file/upload?courseName={name}   # 上传文件 (Multipart)
+GET    /api/file/search?keyword={kw}        # 搜索文件  
+DELETE /api/file/delete/{id}                # 删除文件  
 ```  
 
 ### 业务服务 (User Service)
